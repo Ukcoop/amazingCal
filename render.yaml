@@ -1,0 +1,15 @@
+services:
+  - name: frontend
+    type: web
+    runtime: docker
+    dockerfilePath: ./frontend/Dockerfile
+    healthCheckPath: /
+
+  - name: backend
+    type: web
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    envVars:
+      - key: DATABASE_URL
+        value: ''
+        healthCheckPath: /health
