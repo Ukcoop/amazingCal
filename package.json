@@ -5,11 +5,16 @@
     "frontend": "npm run dev --workspace=frontend",
     "backend": "cargo run backend",
     "test-deployment": "docker compose up --build",
-    "cypress": "npm run cypress --workspace=frontend"
+    "cypress": "npm run cypress --workspace=frontend",
+    "format": "npx prettier . --write && cargo fmt",
+    "lint": "npm run lint --workspace=frontend && cargo clippy"
   },
   "author": "Alexander Cooper",
   "private": true,
   "workspaces": [
     "frontend"
-  ]
+  ],
+  "devDependencies": {
+    "prettier": "3.4.2"
+  }
 }

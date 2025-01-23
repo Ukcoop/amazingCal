@@ -3,8 +3,7 @@ use actix_web::{HttpResponse, Responder};
 
 #[get("/api/")]
 pub async fn hello() -> impl Responder {
-    return HttpResponse::Ok()
-        .body("This is the backend.");
+    return HttpResponse::Ok().body("This is the backend.");
 }
 
 #[cfg(test)]

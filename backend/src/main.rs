@@ -1,6 +1,6 @@
 use actix_cors::Cors;
 use actix_web::{
-//    web::Data,
+    //    web::Data,
     {App, HttpServer},
 };
 //use serde::Serialize;
@@ -25,10 +25,10 @@ pub struct AppState {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-/*
-    let db = convert_sqlx_error(init_db(false).await)?;
-    let shared_state = Data::new(AppState { db });
-*/
+    /*
+        let db = convert_sqlx_error(init_db(false).await)?;
+        let shared_state = Data::new(AppState { db });
+    */
     return HttpServer::new(move || {
         App::new()
             /*.app_data(shared_state.clone())*/
@@ -44,4 +44,3 @@ async fn main() -> std::io::Result<()> {
     .run()
     .await;
 }
-

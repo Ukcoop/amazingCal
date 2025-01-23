@@ -16,7 +16,7 @@ frontend/coverage
 # next.js
 frontend/.next/
 frontend/out/
-frontend/output/
+output/
 
 # production
 frontend/build
@@ -32,7 +32,7 @@ frontend/yarn-error.log*
 frontend/pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-*/.env*
+*/.env.local
 
 # vercel
 frontend/.vercel
