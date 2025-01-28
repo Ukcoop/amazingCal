@@ -3,20 +3,22 @@ use actix_web::{
     //    web::Data,
     {App, HttpServer},
 };
-//use serde::Serialize;
+use serde::Serialize;
 
-//mod core;
+mod core;
 mod routes;
 //mod services;
 
+use routes::get_user_data::get_user_data;
 use routes::hello::hello;
+
 //use services::database::{convert_sqlx_error, init_db, DbWrapper};
-/*
+
 #[derive(Serialize)]
 struct ErrorResponse {
     error: String,
 }
-*/
+
 /*
 pub struct AppState {
     pub db: DbWrapper,
@@ -39,6 +41,7 @@ async fn main() -> std::io::Result<()> {
                     .allow_any_header(),
             )
             .service(hello)
+            .service(get_user_data)
     })
     .bind(("0.0.0.0", 3080))?
     .run()

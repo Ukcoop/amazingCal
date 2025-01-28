@@ -9,6 +9,9 @@ actix-cors = "0.7"
 tokio = { version = "1", features = ["full"] }
 sqlx = { version = "0.8.3", features = ["runtime-async-std-native-tls", "postgres", "sqlite"] }
 
+jsonwebtoken = "9"
+dotenv = "0.15"
+
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
