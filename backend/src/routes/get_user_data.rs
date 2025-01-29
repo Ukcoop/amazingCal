@@ -2,18 +2,13 @@ use actix_web::{get, HttpRequest};
 use actix_web::web::Data;
 use actix_web::{HttpResponse, Responder};
 
-use serde::{Deserialize, Serialize};
-
 use crate::{AppState, ErrorResponse};
 use crate::core::jwt_authentication::is_valid_token;
 
-#[derive(Deserialize, Serialize)]
-struct TestResponse {
-    hello: String,
-}
+use crate::core::calendar::get_user_data;
 
 #[get("/api/getUserData")]
-pub async fn get_user_data(req: HttpRequest, app_state: Data<AppState>) -> impl Responder {
+pub async fn api_get_user_data(req: HttpRequest, app_state: Data<AppState>) -> impl Responder {
     let token: String = match req.headers().get("Authorization") {
         Some(result) => result.to_str().unwrap_or("").to_string(),
         None => "".to_string(),
@@ -25,7 +20,7 @@ pub async fn get_user_data(req: HttpRequest, app_state: Data<AppState>) -> impl 
         });
     }
 
-    let (valid, _) = is_valid_token(token, &app_state.jwt_secret);
+    let (valid, uuid) = is_valid_token(token, &app_state.jwt_secret);
 
     if !valid {
         return HttpResponse::Unauthorized().json(ErrorResponse {
@@ -33,14 +28,13 @@ pub async fn get_user_data(req: HttpRequest, app_state: Data<AppState>) -> impl 
         });
     }
 
-    return HttpResponse::Ok().json(TestResponse {
-        hello: "world".to_string(),
-    });
+    return HttpResponse::Ok().json(get_user_data(uuid));
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::core::calendar::UserData;
     use actix_web::{http::{self, header}, test, App};
     use jsonwebtoken::{encode, Header, EncodingKey};
 
@@ -64,7 +58,7 @@ mod tests {
         let app = test::init_service(
             App::new()
                 .app_data(Data::new(AppState { jwt_secret: "my_secret".to_string() }))
-                .service(get_user_data),
+                .service(api_get_user_data),
         )
         .await;
 
@@ -82,7 +76,7 @@ mod tests {
         let app = test::init_service(
             App::new()
                 .app_data(Data::new(AppState { jwt_secret: "my_secret".to_string() }))
-                .service(get_user_data),
+                .service(api_get_user_data),
         )
         .await;
 
@@ -101,7 +95,7 @@ mod tests {
         let app = test::init_service(
             App::new()
                 .app_data(Data::new(AppState { jwt_secret: "my_secret".to_string() }))
-                .service(get_user_data),
+                .service(api_get_user_data),
         )
         .await;
 
@@ -122,7 +116,7 @@ mod tests {
         let app = test::init_service(
             App::new()
                 .app_data(Data::new(AppState { jwt_secret: "my_secret".to_string() }))
-                .service(get_user_data),
+                .service(api_get_user_data),
         )
         .await;
 
@@ -137,7 +131,7 @@ mod tests {
 
         assert_eq!(resp.status(), http::StatusCode::OK);
 
-        let body: TestResponse = test::read_body_json(resp).await;
-        assert_eq!(body.hello, "world");
+        let body: UserData = test::read_body_json(resp).await;
+        assert_eq!(body.calendars[0].name, "default");
     }
 }

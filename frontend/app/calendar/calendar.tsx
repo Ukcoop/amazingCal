@@ -37,18 +37,23 @@ export default function Calendar({ baseUrl }: { baseUrl: string }) {
         const response = await axios.get('http://localhost:3080/api/getUserData', {
           headers: {
             'Content-Type': 'application/json',
-            Authorization: JSON.stringify({ token: token })
+            Authorization: token
           }
         });
 
         console.log(response.data);
-      } catch (e) {
-        console.error(e);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (e: any) {
+        if (e.status == 401) {
+          router.push('/login');
+        } else {
+          console.error(e);
+        }
       }
     };
 
     getUserData();
-  }, [token, baseUrl]);
+  }, [token, router, baseUrl]);
 
   return (
     <div className="flex flex-col p-5 h-screen max-h-screen bg-white dark:bg-gray-950">

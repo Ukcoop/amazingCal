@@ -8,9 +8,9 @@ use serde::Serialize;
 
 mod core;
 mod routes;
-//mod services;
+mod services;
 
-use routes::get_user_data::get_user_data;
+use routes::get_user_data::api_get_user_data;
 use routes::hello::hello;
 
 //use services::database::{convert_sqlx_error, init_db, DbWrapper};
@@ -47,7 +47,7 @@ async fn main() -> std::io::Result<()> {
                     .allow_any_header(),
             )
             .service(hello)
-            .service(get_user_data)
+            .service(api_get_user_data)
     })
     .bind(("0.0.0.0", 3080))?
     .run()
