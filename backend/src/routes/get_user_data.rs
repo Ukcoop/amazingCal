@@ -1,9 +1,9 @@
-use actix_web::{get, HttpRequest};
 use actix_web::web::Data;
+use actix_web::{get, HttpRequest};
 use actix_web::{HttpResponse, Responder};
 
-use crate::{AppState, ErrorResponse};
 use crate::core::jwt_authentication::is_valid_token;
+use crate::{AppState, ErrorResponse};
 
 use crate::core::calendar::get_user_data;
 
@@ -35,10 +35,14 @@ pub async fn api_get_user_data(req: HttpRequest, app_state: Data<AppState>) -> i
 mod tests {
     use super::*;
     use crate::core::calendar::UserData;
-    use actix_web::{http::{self, header}, test, App};
-    use jsonwebtoken::{encode, Header, EncodingKey};
+    use actix_web::{
+        http::{self, header},
+        test, App,
+    };
+    use jsonwebtoken::{encode, EncodingKey, Header};
 
     use crate::core::jwt_authentication::Session;
+    use crate::services::database::{convert_sqlx_error, Database};
 
     fn create_valid_token(sub: &str, secret: &str) -> String {
         let claims = Session {
@@ -50,14 +54,25 @@ mod tests {
             &Header::new(jsonwebtoken::Algorithm::HS256),
             &claims,
             &EncodingKey::from_secret(secret.as_bytes()),
-        ).expect("Failed to create token");
+        )
+        .expect("Failed to create token");
     }
 
     #[actix_web::test]
     async fn test_no_token() {
+        let database = match convert_sqlx_error(Database::new_db(true).await) {
+            Ok(result) => result,
+            Err(e) => {
+                panic!("Error: failed to initialize database. {}", e)
+            }
+        };
+
         let app = test::init_service(
             App::new()
-                .app_data(Data::new(AppState { jwt_secret: "my_secret".to_string() }))
+                .app_data(Data::new(AppState {
+                    jwt_secret: "my_secret".to_string(),
+                    database,
+                }))
                 .service(api_get_user_data),
         )
         .await;
@@ -73,9 +88,19 @@ mod tests {
 
     #[actix_web::test]
     async fn test_malformed_token() {
+        let database = match convert_sqlx_error(Database::new_db(true).await) {
+            Ok(result) => result,
+            Err(e) => {
+                panic!("Error: failed to initialize database. {}", e)
+            }
+        };
+
         let app = test::init_service(
             App::new()
-                .app_data(Data::new(AppState { jwt_secret: "my_secret".to_string() }))
+                .app_data(Data::new(AppState {
+                    jwt_secret: "my_secret".to_string(),
+                    database,
+                }))
                 .service(api_get_user_data),
         )
         .await;
@@ -92,9 +117,19 @@ mod tests {
 
     #[actix_web::test]
     async fn test_invalid_token() {
+        let database = match convert_sqlx_error(Database::new_db(true).await) {
+            Ok(result) => result,
+            Err(e) => {
+                panic!("Error: failed to initialize database. {}", e)
+            }
+        };
+
         let app = test::init_service(
             App::new()
-                .app_data(Data::new(AppState { jwt_secret: "my_secret".to_string() }))
+                .app_data(Data::new(AppState {
+                    jwt_secret: "my_secret".to_string(),
+                    database,
+                }))
                 .service(api_get_user_data),
         )
         .await;
@@ -113,9 +148,19 @@ mod tests {
 
     #[actix_web::test]
     async fn test_valid_token() {
+        let database = match convert_sqlx_error(Database::new_db(true).await) {
+            Ok(result) => result,
+            Err(e) => {
+                panic!("Error: failed to initialize database. {}", e)
+            }
+        };
+
         let app = test::init_service(
             App::new()
-                .app_data(Data::new(AppState { jwt_secret: "my_secret".to_string() }))
+                .app_data(Data::new(AppState {
+                    jwt_secret: "my_secret".to_string(),
+                    database,
+                }))
                 .service(api_get_user_data),
         )
         .await;

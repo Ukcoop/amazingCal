@@ -42,7 +42,7 @@ export default function Calendar({ baseUrl }: { baseUrl: string }) {
         });
 
         console.log(response.data);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (e: any) {
         if (e.status == 401) {
           router.push('/login');

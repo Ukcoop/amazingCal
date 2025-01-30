@@ -28,7 +28,7 @@ pub fn is_valid_token(token: String, jwt_secret: &String) -> (bool, String) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use jsonwebtoken::{encode, Header, EncodingKey};
+    use jsonwebtoken::{encode, EncodingKey, Header};
 
     fn create_valid_token(sub: &str, secret: &str) -> String {
         let claims = Session {
@@ -40,7 +40,8 @@ mod tests {
             &Header::new(jsonwebtoken::Algorithm::HS256),
             &claims,
             &EncodingKey::from_secret(secret.as_bytes()),
-        ).expect("Failed to create token");
+        )
+        .expect("Failed to create token");
     }
 
     #[actix_web::test]
@@ -48,7 +49,7 @@ mod tests {
         let secret = "my_secret";
         let sub = "test_user";
         let token = create_valid_token(sub, secret);
-        
+
         let (is_valid, decoded_sub) = is_valid_token(token, &secret.to_string());
 
         assert!(is_valid);
@@ -59,8 +60,9 @@ mod tests {
     async fn test_invalid_token() {
         let secret = "my_secret";
         let invalid_token = "invalid.token.string";
-        
-        let (is_valid, decoded_sub) = is_valid_token(invalid_token.to_string(), &secret.to_string());
+
+        let (is_valid, decoded_sub) =
+            is_valid_token(invalid_token.to_string(), &secret.to_string());
 
         assert!(!is_valid);
         assert_eq!(decoded_sub, "");
@@ -69,7 +71,7 @@ mod tests {
     #[actix_web::test]
     async fn test_empty_token() {
         let secret = "my_secret";
-        
+
         let (is_valid, decoded_sub) = is_valid_token("".to_string(), &secret.to_string());
 
         assert!(!is_valid);

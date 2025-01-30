@@ -1,9 +1,9 @@
-use dotenv::dotenv;
 use actix_cors::Cors;
 use actix_web::{
     web::Data,
     {App, HttpServer},
 };
+use dotenv::dotenv;
 use serde::Serialize;
 
 mod core;
@@ -13,7 +13,7 @@ mod services;
 use routes::get_user_data::api_get_user_data;
 use routes::hello::hello;
 
-//use services::database::{convert_sqlx_error, init_db, DbWrapper};
+use services::database::{convert_sqlx_error, Database};
 
 #[derive(Serialize)]
 struct ErrorResponse {
@@ -21,22 +21,26 @@ struct ErrorResponse {
 }
 
 pub struct AppState {
-    //pub db: DbWrapper,
-    pub jwt_secret: String
+    pub database: Database,
+    pub jwt_secret: String,
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    //let db = convert_sqlx_error(init_db(false).await)?;
-    
     dotenv().ok();
+
     let jwt_secret = match std::env::var("JWT_SECRET") {
         Ok(result) => result,
         Err(_) => "".to_string(),
     };
 
-    let shared_state = Data::new(AppState { jwt_secret });
-    
+    let database = convert_sqlx_error(Database::new_db(true).await)?;
+
+    let shared_state = Data::new(AppState {
+        jwt_secret,
+        database,
+    });
+
     return HttpServer::new(move || {
         App::new()
             .app_data(shared_state.clone())
