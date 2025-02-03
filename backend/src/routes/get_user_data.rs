@@ -41,7 +41,7 @@ mod tests {
     };
     use jsonwebtoken::{encode, EncodingKey, Header};
 
-    use crate::core::jwt_authentication::Session;
+    use crate::core::{ init_db::init_db, jwt_authentication::Session };
     use crate::services::database::{convert_sqlx_error, Database};
 
     fn create_valid_token(sub: &str, secret: &str) -> String {
@@ -60,12 +60,19 @@ mod tests {
 
     #[actix_web::test]
     async fn test_no_token() {
-        let database = match convert_sqlx_error(Database::new_db(true).await) {
+        let database = match convert_sqlx_error(Database::new_db(true, "".to_string()).await) {
             Ok(result) => result,
             Err(e) => {
                 panic!("Error: failed to initialize database. {}", e)
             }
         };
+
+        match init_db(&database).await {
+            Ok(_) => {},
+            Err(e) => {
+                panic!("Error: failed to initialize database. {}", e);
+            }
+        }
 
         let app = test::init_service(
             App::new()
@@ -88,12 +95,19 @@ mod tests {
 
     #[actix_web::test]
     async fn test_malformed_token() {
-        let database = match convert_sqlx_error(Database::new_db(true).await) {
+        let database = match convert_sqlx_error(Database::new_db(true, "".to_string()).await) {
             Ok(result) => result,
             Err(e) => {
                 panic!("Error: failed to initialize database. {}", e)
             }
         };
+
+        match init_db(&database).await {
+            Ok(_) => {},
+            Err(e) => {
+                panic!("Error: failed to initialize database. {}", e);
+            }
+        }
 
         let app = test::init_service(
             App::new()
@@ -117,12 +131,19 @@ mod tests {
 
     #[actix_web::test]
     async fn test_invalid_token() {
-        let database = match convert_sqlx_error(Database::new_db(true).await) {
+        let database = match convert_sqlx_error(Database::new_db(true, "".to_string()).await) {
             Ok(result) => result,
             Err(e) => {
                 panic!("Error: failed to initialize database. {}", e)
             }
         };
+
+        match init_db(&database).await {
+            Ok(_) => {},
+            Err(e) => {
+                panic!("Error: failed to initialize database. {}", e);
+            }
+        }
 
         let app = test::init_service(
             App::new()
@@ -148,12 +169,19 @@ mod tests {
 
     #[actix_web::test]
     async fn test_valid_token() {
-        let database = match convert_sqlx_error(Database::new_db(true).await) {
+        let database = match convert_sqlx_error(Database::new_db(true, "".to_string()).await) {
             Ok(result) => result,
             Err(e) => {
                 panic!("Error: failed to initialize database. {}", e)
             }
         };
+
+        match init_db(&database).await {
+            Ok(_) => {},
+            Err(e) => {
+                panic!("Error: failed to initialize database. {}", e);
+            }
+        }
 
         let app = test::init_service(
             App::new()

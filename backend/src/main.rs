@@ -14,6 +14,7 @@ use routes::get_user_data::api_get_user_data;
 use routes::hello::hello;
 
 use services::database::{convert_sqlx_error, Database};
+use core::init_db::init_db;
 
 #[derive(Serialize)]
 struct ErrorResponse {
@@ -34,7 +35,22 @@ async fn main() -> std::io::Result<()> {
         Err(_) => "".to_string(),
     };
 
-    let database = convert_sqlx_error(Database::new_db(true).await)?;
+    let database_url = match std::env::var("DATABASE_URL") {
+        Ok(result) => result,
+        Err(_) => "".to_string(),
+    };
+
+    let use_memory_db = database_url == *"";
+
+    let database = convert_sqlx_error(Database::new_db(use_memory_db, database_url).await)?;
+    
+    match init_db(&database).await {
+        Ok(_) => {},
+        Err(e) => {
+            println!("Error: {}", e);
+            return Ok(());
+        }
+    };
 
     let shared_state = Data::new(AppState {
         jwt_secret,

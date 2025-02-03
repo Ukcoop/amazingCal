@@ -25,10 +25,8 @@ pub fn convert_sqlx_error<T>(result: Result<T, Error>) -> Result<T, io::Error> {
 }
 
 impl Database {
-    pub async fn new_db(in_memory: bool) -> Result<Database, sqlx::Error> {
-        let database_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| "".to_string());
-
-        match in_memory {
+    pub async fn new_db(in_memory: bool, database_url: String) -> Result<Database, sqlx::Error> {
+        return match in_memory {
             true => Ok(Database {
                 db_type: DbType::Sqlite,
                 postgres_pool: None,
@@ -49,7 +47,7 @@ impl Database {
                 ),
                 sqlite_pool: None,
             }),
-        }
+        };
     }
 
     async fn read_db_sqlite<T>(&self, query: &str) -> Result<Vec<T>, Error>
@@ -104,17 +102,17 @@ impl Database {
         for<'r> T: FromRow<'r, SqliteRow>,
         for<'r> T: FromRow<'r, PgRow>,
     {
-        match self.db_type {
+        return match self.db_type {
             DbType::Sqlite => self.read_db_sqlite::<T>(query).await,
             DbType::Postgress => self.read_db_postgres::<T>(query).await,
-        }
+        };
     }
 
     pub async fn write_db(&self, query: &str, data: Vec<String>) -> Result<(), Error> {
-        match self.db_type {
+        return match self.db_type {
             DbType::Sqlite => self.write_db_sqlite(query, data).await,
             DbType::Postgress => self.write_db_postgres(query, data).await,
-        }
+        };
     }
 }
 
@@ -122,9 +120,9 @@ impl Database {
 mod tests {
     use super::*;
 
-    #[actix_web::test]
+    #[tokio::test]
     async fn test_new_db() {
-        match Database::new_db(true).await {
+        match Database::new_db(true, "".to_string()).await {
             Ok(_) => {}
             Err(e) => {
                 panic!("Error: failed to initialize database. {}", e)
@@ -132,9 +130,9 @@ mod tests {
         };
     }
 
-    #[actix_web::test]
+    #[tokio::test]
     async fn test_write_db() {
-        let database: Database = match Database::new_db(true).await {
+        let database: Database = match Database::new_db(true, "".to_string()).await {
             Ok(result) => result,
             Err(e) => {
                 panic!("Error: failed to initialize database. {}", e)
@@ -170,9 +168,9 @@ mod tests {
         };
     }
 
-    #[actix_web::test]
+    #[tokio::test]
     async fn test_read_db() {
-        let database: Database = match Database::new_db(true).await {
+        let database: Database = match Database::new_db(true, "".to_string()).await {
             Ok(result) => result,
             Err(e) => {
                 panic!("Error: failed to initialize database. {}", e)

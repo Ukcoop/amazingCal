@@ -44,7 +44,7 @@ mod tests {
         .expect("Failed to create token");
     }
 
-    #[actix_web::test]
+    #[tokio::test]
     async fn test_valid_token() {
         let secret = "my_secret";
         let sub = "test_user";
@@ -56,7 +56,7 @@ mod tests {
         assert_eq!(decoded_sub, sub);
     }
 
-    #[actix_web::test]
+    #[tokio::test]
     async fn test_invalid_token() {
         let secret = "my_secret";
         let invalid_token = "invalid.token.string";
@@ -68,7 +68,7 @@ mod tests {
         assert_eq!(decoded_sub, "");
     }
 
-    #[actix_web::test]
+    #[tokio::test]
     async fn test_empty_token() {
         let secret = "my_secret";
 
@@ -78,7 +78,7 @@ mod tests {
         assert_eq!(decoded_sub, "");
     }
 
-    #[actix_web::test]
+    #[tokio::test]
     async fn test_empty_secret() {
         let sub = "test_user";
         let token = create_valid_token(sub, "my_secret");
