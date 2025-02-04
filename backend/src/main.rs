@@ -13,8 +13,8 @@ mod services;
 use routes::get_user_data::api_get_user_data;
 use routes::hello::hello;
 
-use services::database::{convert_sqlx_error, Database};
 use core::init_db::init_db;
+use services::database::{convert_sqlx_error, Database};
 
 #[derive(Serialize)]
 struct ErrorResponse {
@@ -43,9 +43,9 @@ async fn main() -> std::io::Result<()> {
     let use_memory_db = database_url == *"";
 
     let database = convert_sqlx_error(Database::new_db(use_memory_db, database_url).await)?;
-    
+
     match init_db(&database).await {
-        Ok(_) => {},
+        Ok(_) => {}
         Err(e) => {
             println!("Error: {}", e);
             return Ok(());

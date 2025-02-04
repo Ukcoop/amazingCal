@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "frontend": "npm run dev --workspace=frontend",
-    "backend": "source backend/.env.local && JWT_SECRET=$(echo \"$JWT_SECRET\") cargo run backend",
+    "backend": "JWT_SECRET=$(cat backend/.JWT_SECRET) cargo run backend",
     "test-deployment": "docker compose up --build",
     "cypress": "npm run cypress --workspace=frontend",
     "format": "npx prettier . --write && cargo fmt",

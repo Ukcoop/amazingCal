@@ -28,7 +28,12 @@ pub async fn api_get_user_data(req: HttpRequest, app_state: Data<AppState>) -> i
         });
     }
 
-    return HttpResponse::Ok().json(get_user_data(uuid));
+    return match get_user_data(&uuid, &app_state.database).await {
+        Ok(data) => HttpResponse::Ok().json(data),
+        Err(e) => HttpResponse::InternalServerError().json(ErrorResponse {
+            error: e.to_string(),
+        }),
+    };
 }
 
 #[cfg(test)]
@@ -41,7 +46,7 @@ mod tests {
     };
     use jsonwebtoken::{encode, EncodingKey, Header};
 
-    use crate::core::{ init_db::init_db, jwt_authentication::Session };
+    use crate::core::{init_db::init_db, jwt_authentication::Session};
     use crate::services::database::{convert_sqlx_error, Database};
 
     fn create_valid_token(sub: &str, secret: &str) -> String {
@@ -68,7 +73,7 @@ mod tests {
         };
 
         match init_db(&database).await {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(e) => {
                 panic!("Error: failed to initialize database. {}", e);
             }
@@ -103,7 +108,7 @@ mod tests {
         };
 
         match init_db(&database).await {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(e) => {
                 panic!("Error: failed to initialize database. {}", e);
             }
@@ -139,7 +144,7 @@ mod tests {
         };
 
         match init_db(&database).await {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(e) => {
                 panic!("Error: failed to initialize database. {}", e);
             }
@@ -177,7 +182,7 @@ mod tests {
         };
 
         match init_db(&database).await {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(e) => {
                 panic!("Error: failed to initialize database. {}", e);
             }
@@ -201,6 +206,7 @@ mod tests {
             .to_request();
 
         let resp = test::call_service(&app, req).await;
+        println!("{:#?}", resp);
 
         assert_eq!(resp.status(), http::StatusCode::OK);
 

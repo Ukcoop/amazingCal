@@ -1,30 +1,56 @@
-use sqlx::Error;
+use sqlx::{Error, FromRow};
 
 use crate::services::database::Database;
+
+#[derive(FromRow, Clone, Debug, PartialEq)]
+pub struct CalendarTable {
+    pub user_id: String,
+    pub uuid: String,
+    pub name: String,
+}
+
+#[derive(FromRow, Clone, Debug, PartialEq)]
+pub struct EventTable {
+    pub calendar_id: String,
+    pub name: String,
+    pub start_id: String,
+    pub end_id: String,
+}
+
+#[derive(FromRow, Clone, Debug, PartialEq)]
+pub struct TimeTable {
+    pub event_id: String,
+    pub year: i16,
+    pub month: i16,
+    pub day: i16,
+    pub hour: i16,
+    pub minute: i16,
+}
 
 pub async fn init_db(database: &Database) -> Result<(), Error> {
     let calendar_table = "
         CREATE TABLE IF NOT EXISTS calendars (
-            userId TEXT NOT NULL,
+            user_id TEXT NOT NULL,
             uuid TEXT NOT NULL,
             name TEXT NOT NULL
         )";
 
     let event_table = "
         CREATE TABLE IF NOT EXISTS events (
-            calendarId TEXT NOT NULL,
-            uuid TEXT NOT NULL,
+            calendar_id TEXT NOT NULL,
+            start_id TEXT NOT NULL,
+            end_id TEXT NOT NULL,
             name TEXT NOT NULL
         )";
 
     let time_table = "
         CREATE TABLE IF NOT EXISTS times (
-            eventId TEXT NOT NULL,
-            year NUMBER NOT NULL,
-            month NUMBER NOT NULL,
-            day NUMBER NOT NULL,
-            hour NUMBER NOT NULL,
-            minute NUMBER NOT NULL
+            event_id TEXT NOT NULL,
+            year SMALLINT NOT NULL,
+            month SMALLINT NOT NULL,
+            day SMALLINT NOT NULL,
+            hour SMALLINT NOT NULL,
+            minute SMALLINT NOT NULL
         )";
 
     database.write_db(calendar_table, vec![]).await?;
@@ -49,7 +75,7 @@ mod tests {
         };
 
         match init_db(&database).await {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(e) => {
                 panic!("Error: failed to initialize database. {}", e);
             }
