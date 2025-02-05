@@ -5,7 +5,7 @@ use actix_web::{HttpResponse, Responder};
 use crate::core::jwt_authentication::is_valid_token;
 use crate::{AppState, ErrorResponse};
 
-use crate::core::calendar::get_user_data;
+use crate::core::calendar::get_user_data::get_user_data;
 
 #[get("/api/getUserData")]
 pub async fn api_get_user_data(req: HttpRequest, app_state: Data<AppState>) -> impl Responder {
@@ -39,7 +39,7 @@ pub async fn api_get_user_data(req: HttpRequest, app_state: Data<AppState>) -> i
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::calendar::UserData;
+    use crate::core::calendar::shared::UserData;
     use actix_web::{
         http::{self, header},
         test, App,
