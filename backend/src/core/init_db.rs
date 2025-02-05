@@ -20,11 +20,11 @@ pub struct EventTable {
 #[derive(FromRow, Clone, Debug, PartialEq)]
 pub struct TimeTable {
     pub event_id: String,
-    pub year: i16,
-    pub month: i16,
-    pub day: i16,
-    pub hour: i16,
-    pub minute: i16,
+    pub year: String,
+    pub month: String,
+    pub day: String,
+    pub hour: String,
+    pub minute: String,
 }
 
 pub async fn init_db(database: &Database) -> Result<(), Error> {
@@ -46,11 +46,11 @@ pub async fn init_db(database: &Database) -> Result<(), Error> {
     let time_table = "
         CREATE TABLE IF NOT EXISTS times (
             event_id TEXT NOT NULL,
-            year SMALLINT NOT NULL,
-            month SMALLINT NOT NULL,
-            day SMALLINT NOT NULL,
-            hour SMALLINT NOT NULL,
-            minute SMALLINT NOT NULL
+            year TEXT NOT NULL,
+            month TEXT NOT NULL,
+            day TEXT NOT NULL,
+            hour TEXT NOT NULL,
+            minute TEXT NOT NULL
         )";
 
     database.write_db(calendar_table, vec![]).await?;

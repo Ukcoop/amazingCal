@@ -50,24 +50,34 @@ impl Database {
         };
     }
 
-    async fn read_db_sqlite<T>(&self, query: &str) -> Result<Vec<T>, Error>
+    async fn read_db_sqlite<T>(&self, query: &str, data: Vec<String>) -> Result<Vec<T>, Error>
     where
         T: for<'r> FromRow<'r, SqliteRow> + Send + Unpin,
     {
         if let Some(pool) = &self.sqlite_pool {
-            let rows = sqlx::query_as::<_, T>(query).fetch_all(pool).await?;
-            return Ok(rows);
+            let mut query_builder = sqlx::query(query);
+            for item in data.iter() {
+                query_builder = query_builder.bind(item);
+            }
+            let rows = query_builder.fetch_all(pool).await?;
+            let result: Vec<T> = rows.into_iter().map(|row| T::from_row(&row).unwrap()).collect();
+            return Ok(result);
         }
         Err(Error::RowNotFound)
     }
 
-    async fn read_db_postgres<T>(&self, query: &str) -> Result<Vec<T>, Error>
+    async fn read_db_postgres<T>(&self, query: &str, data: Vec<String>) -> Result<Vec<T>, Error>
     where
         T: for<'r> FromRow<'r, PgRow> + Send + Unpin,
     {
         if let Some(pool) = &self.postgres_pool {
-            let rows = sqlx::query_as::<_, T>(query).fetch_all(pool).await?;
-            return Ok(rows);
+            let mut query_builder = sqlx::query(query);
+            for item in data.iter() {
+                query_builder = query_builder.bind(item);
+            }
+            let rows = query_builder.fetch_all(pool).await?;
+            let result: Vec<T> = rows.into_iter().map(|row| T::from_row(&row).unwrap()).collect();
+            return Ok(result);
         }
         Err(Error::RowNotFound)
     }
@@ -96,15 +106,15 @@ impl Database {
         Err(Error::RowNotFound)
     }
 
-    pub async fn read_db<T>(&self, query: &str) -> Result<Vec<T>, Error>
+    pub async fn read_db<T>(&self, query: &str, data: Vec<String>) -> Result<Vec<T>, Error>
     where
         T: Send + Unpin,
         for<'r> T: FromRow<'r, SqliteRow>,
         for<'r> T: FromRow<'r, PgRow>,
     {
         return match self.db_type {
-            DbType::Sqlite => self.read_db_sqlite::<T>(query).await,
-            DbType::Postgress => self.read_db_postgres::<T>(query).await,
+            DbType::Sqlite => self.read_db_sqlite::<T>(query, data).await,
+            DbType::Postgress => self.read_db_postgres::<T>(query, data).await,
         };
     }
 
@@ -212,7 +222,7 @@ mod tests {
         }
 
         match database
-            .read_db::<Message>("SELECT username, message FROM messages")
+            .read_db::<Message>("SELECT username, message FROM messages", vec![])
             .await
         {
             Ok(result) => {

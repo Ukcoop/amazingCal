@@ -2,11 +2,11 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Time {
-    pub year: i16,
-    pub month: i16,
-    pub day: i16,
-    pub hour: i16,
-    pub minute: i16,
+    pub year: u16,
+    pub month: u8,
+    pub day: u8,
+    pub hour: u8,
+    pub minute: u8,
 }
 
 #[derive(Deserialize, Serialize, Debug)]

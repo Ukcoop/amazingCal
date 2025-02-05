@@ -1,4 +1,5 @@
 use sqlx::Error;
+use uuid::Uuid;
 
 use crate::services::database::Database;
 
@@ -10,7 +11,7 @@ pub async fn create_calendar(
     database
         .write_db(
             "INSERT INTO calendars (user_id, uuid, name) VALUES ($1, $2, $3)",
-            vec![user_id, "testy".to_string(), name],
+            vec![user_id, Uuid::new_v4().to_string(), name],
         )
         .await?;
     return Ok(());
