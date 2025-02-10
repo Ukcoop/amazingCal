@@ -61,12 +61,11 @@ pub async fn init_db(database: &Database) -> Result<(), Error> {
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use super::*;
     use crate::services::database::convert_sqlx_error;
 
-    #[tokio::test]
-    async fn test_init_db() {
+    pub async fn get_testable_db() -> Database {
         let database = match convert_sqlx_error(Database::new_db(true, "".to_string()).await) {
             Ok(result) => result,
             Err(e) => {
@@ -80,5 +79,12 @@ mod tests {
                 panic!("Error: failed to initialize database. {}", e);
             }
         }
+
+        return database;
+    }
+
+    #[tokio::test]
+    async fn test_init_db() {
+        get_testable_db().await;
     }
 }

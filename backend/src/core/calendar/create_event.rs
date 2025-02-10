@@ -5,7 +5,13 @@ use crate::services::database::Database;
 
 use super::shared::Time;
 
-pub async fn create_event(calendar_id: String, name: String, start: Time, end: Time, database: &Database) -> Result<(), Error> {
+pub async fn create_event(
+    calendar_id: String,
+    name: String,
+    start: Time,
+    end: Time,
+    database: &Database,
+) -> Result<(), Error> {
     let event_id = Uuid::new_v4().to_string();
     let start_id = Uuid::new_v4().to_string();
     let end_id = Uuid::new_v4().to_string();
@@ -27,20 +33,66 @@ pub async fn create_event(calendar_id: String, name: String, start: Time, end: T
     database
         .write_db(
             "INSERT INTO events (calendar_id, start_id, end_id, name) VALUES ($1, $2, $3, $4)",
-            vec![calendar_id, start_id, end_id, name]
+            vec![calendar_id, start_id, end_id, name],
         )
-    .await?;
+        .await?;
 
     return Ok(());
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use super::*;
-    use crate::core::init_db::init_db;
+
+    use crate::core::calendar::{create_calendar::create_calendar, shared::Time};
+    use crate::core::init_db::tests::get_testable_db;
+
+    pub async fn get_database_with_filled_calendar() -> Database {
+        let database: Database = get_testable_db().await;
+
+        match create_calendar("test_user".to_string(), "test".to_string(), &database).await {
+            Ok(_) => {}
+            Err(e) => {
+                panic!("Error: failed to add calendar. {}", e)
+            }
+        }
+
+        let start = Time {
+            year: 2025,
+            month: 12,
+            day: 31,
+            hour: 0,
+            minute: 0,
+        };
+
+        let end = Time {
+            year: 2026,
+            month: 1,
+            day: 1,
+            hour: 0,
+            minute: 0,
+        };
+
+        match create_event(
+            "test_user".to_string(),
+            "test".to_string(),
+            start,
+            end,
+            &database,
+        )
+        .await
+        {
+            Ok(_) => {}
+            Err(e) => {
+                panic!("Error: failed to add event. {}", e)
+            }
+        }
+
+        return database;
+    }
 
     #[tokio::test]
     async fn test_create_event() {
-        // needs get_calendar()
+        get_database_with_filled_calendar().await;
     }
 }

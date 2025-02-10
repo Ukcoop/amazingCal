@@ -60,7 +60,10 @@ impl Database {
                 query_builder = query_builder.bind(item);
             }
             let rows = query_builder.fetch_all(pool).await?;
-            let result: Vec<T> = rows.into_iter().map(|row| T::from_row(&row).unwrap()).collect();
+            let result: Vec<T> = rows
+                .into_iter()
+                .map(|row| T::from_row(&row))
+                .collect::<Result<Vec<T>, _>>()?;
             return Ok(result);
         }
         Err(Error::RowNotFound)
@@ -76,7 +79,10 @@ impl Database {
                 query_builder = query_builder.bind(item);
             }
             let rows = query_builder.fetch_all(pool).await?;
-            let result: Vec<T> = rows.into_iter().map(|row| T::from_row(&row).unwrap()).collect();
+            let result: Vec<T> = rows
+                .into_iter()
+                .map(|row| T::from_row(&row))
+                .collect::<Result<Vec<T>, _>>()?;
             return Ok(result);
         }
         Err(Error::RowNotFound)

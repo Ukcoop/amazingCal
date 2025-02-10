@@ -20,23 +20,11 @@ pub async fn create_calendar(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::init_db::init_db;
+    use crate::core::init_db::tests::get_testable_db;
 
     #[tokio::test]
     async fn test_create_calendar() {
-        let database: Database = match Database::new_db(true, "".to_string()).await {
-            Ok(result) => result,
-            Err(e) => {
-                panic!("Error: failed to initialize database. {}", e)
-            }
-        };
-
-        match init_db(&database).await {
-            Ok(_) => {}
-            Err(e) => {
-                panic!("Error: failed to initialize database. {}", e);
-            }
-        }
+        let database: Database = get_testable_db().await;
 
         match create_calendar("test_user".to_string(), "test".to_string(), &database).await {
             Ok(_) => {}
