@@ -21,7 +21,7 @@ pub async fn get_user_data(uuid: &str, database: &Database) -> Result<UserData, 
     }
 
     for calendar in calendars_from_db {
-        calendars.push(parse_calendar(calendar, database).await?);
+        calendars.push(parse_calendar(&calendar, database).await?);
     }
 
     return Ok(UserData { calendars });

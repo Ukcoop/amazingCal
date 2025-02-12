@@ -12,6 +12,7 @@ pub struct Time {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Event {
     pub name: String,
+    pub uuid: String,
     pub start: Time,
     pub end: Time,
 }
@@ -19,6 +20,7 @@ pub struct Event {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Calendar {
     pub name: String,
+    pub uuid: String,
     pub events: Vec<Event>,
 }
 

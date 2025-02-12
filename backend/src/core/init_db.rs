@@ -12,6 +12,7 @@ pub struct CalendarTable {
 #[derive(FromRow, Clone, Debug, PartialEq)]
 pub struct EventTable {
     pub calendar_id: String,
+    pub uuid: String,
     pub name: String,
     pub start_id: String,
     pub end_id: String,
@@ -19,7 +20,7 @@ pub struct EventTable {
 
 #[derive(FromRow, Clone, Debug, PartialEq)]
 pub struct TimeTable {
-    pub event_id: String,
+    pub uuid: String,
     pub year: String,
     pub month: String,
     pub day: String,
@@ -38,6 +39,7 @@ pub async fn init_db(database: &Database) -> Result<(), Error> {
     let event_table = "
         CREATE TABLE IF NOT EXISTS events (
             calendar_id TEXT NOT NULL,
+            uuid TEXT NOT NULL,
             start_id TEXT NOT NULL,
             end_id TEXT NOT NULL,
             name TEXT NOT NULL
@@ -45,7 +47,7 @@ pub async fn init_db(database: &Database) -> Result<(), Error> {
 
     let time_table = "
         CREATE TABLE IF NOT EXISTS times (
-            event_id TEXT NOT NULL,
+            uuid TEXT NOT NULL,
             year TEXT NOT NULL,
             month TEXT NOT NULL,
             day TEXT NOT NULL,

@@ -18,22 +18,22 @@ pub async fn create_event(
 
     database
         .write_db(
-            "INSERT INTO times (event_id, year, month, day, hour, minute) VALUES ($1, $2, $3, $4, $5, $6)",
-            vec![event_id.clone(), start.year.to_string(), start.month.to_string(), start.day.to_string(), start.hour.to_string(), start.minute.to_string()],
+            "INSERT INTO times (uuid, year, month, day, hour, minute) VALUES ($1, $2, $3, $4, $5, $6)",
+            vec![start_id.clone(), start.year.to_string(), start.month.to_string(), start.day.to_string(), start.hour.to_string(), start.minute.to_string()],
         )
     .await?;
 
     database
         .write_db(
-            "INSERT INTO times (event_id, year, month, day, hour, minute) VALUES ($1, $2, $3, $4, $5, $6)",
-            vec![event_id.clone(), end.year.to_string(), end.month.to_string(), end.day.to_string(), end.hour.to_string(), end.minute.to_string()],
+            "INSERT INTO times (uuid, year, month, day, hour, minute) VALUES ($1, $2, $3, $4, $5, $6)",
+            vec![end_id.clone(), end.year.to_string(), end.month.to_string(), end.day.to_string(), end.hour.to_string(), end.minute.to_string()],
         )
     .await?;
 
     database
         .write_db(
-            "INSERT INTO events (calendar_id, start_id, end_id, name) VALUES ($1, $2, $3, $4)",
-            vec![calendar_id, start_id, end_id, name],
+            "INSERT INTO events (calendar_id, uuid, start_id, end_id, name) VALUES ($1, $2, $3, $4, $5)",
+            vec![calendar_id, event_id, start_id, end_id, name],
         )
         .await?;
 
@@ -44,8 +44,10 @@ pub async fn create_event(
 pub mod tests {
     use super::*;
 
-    use crate::core::calendar::{create_calendar::create_calendar, shared::Time};
-    use crate::core::init_db::tests::get_testable_db;
+    use crate::core::calendar::{
+        create_calendar::create_calendar, get_calendars::get_calendars, shared::Time,
+    };
+    use crate::core::init_db::{tests::get_testable_db, CalendarTable};
 
     pub async fn get_database_with_filled_calendar() -> Database {
         let database: Database = get_testable_db().await;
@@ -56,6 +58,14 @@ pub mod tests {
                 panic!("Error: failed to add calendar. {}", e)
             }
         }
+
+        let calendars_from_db: Vec<CalendarTable> =
+            match get_calendars("test_user", &database).await {
+                Ok(result) => result,
+                Err(e) => {
+                    panic!("Error: failed to get calendars. {}", e)
+                }
+            };
 
         let start = Time {
             year: 2025,
@@ -74,8 +84,8 @@ pub mod tests {
         };
 
         match create_event(
-            "test_user".to_string(),
-            "test".to_string(),
+            calendars_from_db[0].uuid.clone(),
+            "New years eve".to_string(),
             start,
             end,
             &database,
