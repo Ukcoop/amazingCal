@@ -7,7 +7,7 @@ use serde::Deserialize;
 use crate::core::security::validate_request::validate_request;
 use crate::{AppState, ErrorResponse};
 
-use crate::core::calendar::update_calendar::update_calendar;
+use crate::core::calendar::update::calendar::update_calendar;
 
 #[derive(Deserialize)]
 struct RequestData {
@@ -31,7 +31,7 @@ pub async fn api_update_calendar(
         Err(e) => HttpResponse::InternalServerError().json(ErrorResponse {
             error: e.to_string(),
         }),
-    }
+    };
 }
 
 #[cfg(test)]
@@ -46,12 +46,14 @@ pub mod tests {
 
     use crate::routes::get::user_data::tests::create_valid_token;
 
-    use crate::core::calendar::{ create_event::tests::get_database_with_filled_calendar, get_calendars::get_calendars };
+    use crate::core::calendar::{
+        create::event::tests::get_database_with_filled_calendar, get::calendars::get_calendars,
+    };
 
     #[actix_web::test]
     async fn test_api_get_calendar() {
         let database: Database = get_database_with_filled_calendar().await;
-       
+
         let app = test::init_service(
             App::new()
                 .app_data(Data::new(AppState {
@@ -86,13 +88,12 @@ pub mod tests {
         let response = test::call_service(&app, reqest).await;
         assert_eq!(response.status(), http::StatusCode::OK);
 
-        calendars_from_db =
-            match get_calendars("test_user", &database).await {
-                Ok(result) => result,
-                Err(e) => {
-                    panic!("Error: failed to get calendars. {}", e)
-                }
-            };
+        calendars_from_db = match get_calendars("test_user", &database).await {
+            Ok(result) => result,
+            Err(e) => {
+                panic!("Error: failed to get calendars. {}", e)
+            }
+        };
 
         assert_eq!(calendars_from_db[0].name, "testy 2 eletric boogaloo");
     }

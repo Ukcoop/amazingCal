@@ -68,8 +68,8 @@ pub async fn parse_calendar(
 mod tests {
     use super::*;
 
-    use crate::core::calendar::create_event::tests::get_database_with_filled_calendar;
-    use crate::core::calendar::get_calendars::get_calendars;
+    use crate::core::calendar::create::event::tests::get_database_with_filled_calendar;
+    use crate::core::calendar::get::calendars::get_calendars;
 
     #[tokio::test]
     async fn test_parse_event() {

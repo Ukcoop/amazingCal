@@ -2,7 +2,7 @@ use sqlx::Error;
 
 use crate::services::database::Database;
 
-use crate::core::calendar::get_events::get_events;
+use super::super::get::events::get_events;
 
 pub async fn delete_calendar(uuid: &String, database: &Database) -> Result<(), Error> {
     let events = get_events(uuid, database).await?;
@@ -28,7 +28,7 @@ mod tests {
     use super::*;
 
     use crate::core::calendar::{
-        create_event::tests::get_database_with_filled_calendar, get_calendars::get_calendars,
+        create::event::tests::get_database_with_filled_calendar, get::calendars::get_calendars,
     };
     use crate::core::init_db::CalendarTable;
 

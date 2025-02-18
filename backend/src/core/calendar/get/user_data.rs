@@ -3,12 +3,12 @@ use sqlx::Error;
 use crate::core::init_db::CalendarTable;
 use crate::services::database::Database;
 
-use super::shared::{Calendar, UserData};
+use super::super::shared::{Calendar, UserData};
 
-use super::parse_calendar_data::parse_calendar;
+use super::super::parse_calendar_data::parse_calendar;
 
-use super::create_calendar::create_calendar;
-use super::get_calendars::get_calendars;
+use super::super::create::calendar::create_calendar;
+use super::super::get::calendars::get_calendars;
 
 pub async fn get_user_data(uuid: &str, database: &Database) -> Result<UserData, Error> {
     let mut calendars: Vec<Calendar> = Vec::new();

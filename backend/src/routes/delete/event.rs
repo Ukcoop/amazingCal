@@ -7,7 +7,7 @@ use serde::Deserialize;
 use crate::core::security::validate_request::validate_request;
 use crate::{AppState, ErrorResponse};
 
-use crate::core::calendar::delete_event::delete_event;
+use crate::core::calendar::delete::event::delete_event;
 
 #[derive(Deserialize)]
 struct RequestData {
@@ -30,7 +30,7 @@ pub async fn api_delete_event(
         Err(e) => HttpResponse::InternalServerError().json(ErrorResponse {
             error: e.to_string(),
         }),
-    }
+    };
 }
 
 #[cfg(test)]
@@ -40,23 +40,20 @@ pub mod tests {
     use actix_web::{http, http::header, test, App};
     use serde_json::json;
 
-    use crate::core::init_db::{ CalendarTable, EventTable };
+    use crate::core::init_db::{CalendarTable, EventTable};
     use crate::services::database::Database;
 
     use crate::routes::get::user_data::tests::create_valid_token;
 
     use crate::core::calendar::{
-        parse_calendar_data::parse_calendar,
-        shared::Calendar,
-        create_event::tests::get_database_with_filled_calendar,
-        get_calendars::get_calendars,
-        get_events::get_events
+        create::event::tests::get_database_with_filled_calendar, get::calendars::get_calendars,
+        get::events::get_events, parse_calendar_data::parse_calendar, shared::Calendar,
     };
 
     #[actix_web::test]
     async fn test_api_delete_event() {
         let database: Database = get_database_with_filled_calendar().await;
-       
+
         let app = test::init_service(
             App::new()
                 .app_data(Data::new(AppState {
@@ -75,7 +72,8 @@ pub mod tests {
                 }
             };
 
-        let parsed_calendar: Calendar = match parse_calendar(&calendars_from_db[0], &database).await {
+        let parsed_calendar: Calendar = match parse_calendar(&calendars_from_db[0], &database).await
+        {
             Ok(result) => result,
             Err(e) => {
                 panic!("Error: failed to get calendars. {}", e)

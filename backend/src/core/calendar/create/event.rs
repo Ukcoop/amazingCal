@@ -3,7 +3,7 @@ use uuid::Uuid;
 
 use crate::services::database::Database;
 
-use super::shared::Time;
+use super::super::shared::Time;
 
 pub async fn create_event(
     calendar_id: &String,
@@ -45,8 +45,9 @@ pub mod tests {
     use super::*;
 
     use crate::core::calendar::{
-        create_calendar::create_calendar, get_calendars::get_calendars, shared::Time,
+        create::calendar::create_calendar, get::calendars::get_calendars, shared::Time,
     };
+
     use crate::core::init_db::{tests::get_testable_db, CalendarTable};
 
     pub async fn get_database_with_filled_calendar() -> Database {

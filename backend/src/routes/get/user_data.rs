@@ -4,7 +4,7 @@ use actix_web::{HttpResponse, Responder};
 
 use crate::{AppState, ErrorResponse};
 
-use crate::core::calendar::get_user_data::get_user_data;
+use crate::core::calendar::get::user_data::get_user_data;
 use crate::core::security::validate_request::validate_request;
 
 #[get("/api/get/userData")]

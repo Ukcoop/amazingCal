@@ -12,10 +12,10 @@ mod services;
 
 use routes::hello::hello;
 
-use routes::create::{ calendar::api_create_calendar, event::api_create_event };
+use routes::create::{calendar::api_create_calendar, event::api_create_event};
+use routes::delete::{calendar::api_delete_calendar, event::api_delete_event};
 use routes::get::user_data::api_get_user_data;
-use routes::update::{ calendar::api_update_calendar, event::api_update_event };
-use routes::delete::{ calendar::api_delete_calendar, event::api_delete_event };
+use routes::update::{calendar::api_update_calendar, event::api_update_event};
 
 use core::init_db::init_db;
 use services::database::{convert_sqlx_error, Database};
@@ -78,7 +78,6 @@ async fn main() -> std::io::Result<()> {
             .service(api_update_event)
             .service(api_delete_calendar)
             .service(api_delete_event)
-
     })
     .bind(("0.0.0.0", 3080))?
     .run()

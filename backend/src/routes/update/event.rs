@@ -7,14 +7,14 @@ use serde::Deserialize;
 use crate::core::security::validate_request::validate_request;
 use crate::{AppState, ErrorResponse};
 
-use crate::core::calendar::{ shared::Time, update_event::update_event };
+use crate::core::calendar::{shared::Time, update::event::update_event};
 
 #[derive(Deserialize)]
 struct RequestData {
     uuid: String,
     name: String,
     start: Time,
-    end: Time
+    end: Time,
 }
 
 #[post("/api/update/event")]
@@ -28,12 +28,20 @@ pub async fn api_update_event(
         return result;
     }
 
-    return match update_event(&data.uuid, &data.name, &data.start, &data.end, &app_state.database).await {
+    return match update_event(
+        &data.uuid,
+        &data.name,
+        &data.start,
+        &data.end,
+        &app_state.database,
+    )
+    .await
+    {
         Ok(_) => HttpResponse::Ok().into(),
         Err(e) => HttpResponse::InternalServerError().json(ErrorResponse {
             error: e.to_string(),
         }),
-    }
+    };
 }
 
 #[cfg(test)]
@@ -43,17 +51,14 @@ pub mod tests {
     use actix_web::{http, http::header, test, App};
     use serde_json::json;
 
-    use crate::core::init_db::{ CalendarTable, EventTable };
+    use crate::core::init_db::{CalendarTable, EventTable};
     use crate::services::database::Database;
 
     use crate::routes::get::user_data::tests::create_valid_token;
 
     use crate::core::calendar::{
-        parse_calendar_data::parse_calendar,
-        shared::Calendar,
-        create_event::tests::get_database_with_filled_calendar,
-        get_calendars::get_calendars,
-        get_events::get_events
+        create::event::tests::get_database_with_filled_calendar, get::calendars::get_calendars,
+        get::events::get_events, parse_calendar_data::parse_calendar, shared::Calendar,
     };
 
     #[actix_web::test]
@@ -78,7 +83,8 @@ pub mod tests {
                 }
             };
 
-        let parsed_calendar: Calendar = match parse_calendar(&calendars_from_db[0], &database).await {
+        let parsed_calendar: Calendar = match parse_calendar(&calendars_from_db[0], &database).await
+        {
             Ok(result) => result,
             Err(e) => {
                 panic!("Error: failed to get calendars. {}", e)

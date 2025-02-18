@@ -19,7 +19,7 @@ pub async fn get_calendars(
 mod tests {
     use super::*;
 
-    use crate::core::calendar::create_calendar::create_calendar;
+    use crate::core::calendar::create::calendar::create_calendar;
     use crate::core::init_db::tests::get_testable_db;
 
     #[tokio::test]

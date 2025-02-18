@@ -7,7 +7,7 @@ use serde::Deserialize;
 use crate::core::security::validate_request::validate_request;
 use crate::{AppState, ErrorResponse};
 
-use crate::core::calendar::create_calendar::create_calendar;
+use crate::core::calendar::create::calendar::create_calendar;
 
 #[derive(Deserialize)]
 struct RequestData {
@@ -45,7 +45,7 @@ pub mod tests {
 
     use crate::routes::get::user_data::tests::create_valid_token;
 
-    use crate::core::calendar::get_calendars::get_calendars;
+    use crate::core::calendar::get::calendars::get_calendars;
 
     #[actix_web::test]
     async fn test_api_create_calendar() {

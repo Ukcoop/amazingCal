@@ -11,7 +11,11 @@ pub async fn create_calendar(
     database
         .write_db(
             "INSERT INTO calendars (user_id, uuid, name) VALUES ($1, $2, $3)",
-            vec![user_id.to_string(), Uuid::new_v4().to_string(), name.to_string()],
+            vec![
+                user_id.to_string(),
+                Uuid::new_v4().to_string(),
+                name.to_string(),
+            ],
         )
         .await?;
     return Ok(());

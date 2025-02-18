@@ -25,10 +25,10 @@ pub async fn get_event(event_id: &str, database: &Database) -> Result<Vec<EventT
 pub mod tests {
     use super::*;
 
-    use crate::core::calendar::get_calendars::get_calendars;
+    use crate::core::calendar::get::calendars::get_calendars;
     use crate::core::init_db::CalendarTable;
 
-    use crate::core::calendar::create_event::tests::get_database_with_filled_calendar;
+    use crate::core::calendar::create::event::tests::get_database_with_filled_calendar;
 
     #[tokio::test]
     async fn test_get_event() {

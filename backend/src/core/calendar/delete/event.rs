@@ -2,7 +2,7 @@ use sqlx::Error;
 
 use crate::services::database::Database;
 
-use crate::core::calendar::get_events::get_event;
+use crate::core::calendar::get::events::get_event;
 use crate::core::init_db::EventTable;
 
 pub async fn delete_event(uuid: &String, database: &Database) -> Result<(), Error> {
@@ -33,7 +33,7 @@ mod tests {
     use super::*;
 
     use crate::core::calendar::{
-        create_event::tests::get_database_with_filled_calendar, get_calendars::get_calendars,
+        create::event::tests::get_database_with_filled_calendar, get::calendars::get_calendars,
         parse_calendar_data::parse_calendar,
     };
     use crate::core::init_db::CalendarTable;

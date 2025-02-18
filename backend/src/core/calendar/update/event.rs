@@ -3,9 +3,9 @@ use sqlx::Error;
 use crate::core::init_db::EventTable;
 use crate::services::database::Database;
 
-use super::shared::Time;
+use super::super::shared::Time;
 
-use super::get_events::get_event;
+use super::super::get::events::get_event;
 
 pub async fn update_event(
     uuid: &String,
@@ -45,7 +45,7 @@ mod tests {
     use super::*;
 
     use crate::core::calendar::{
-        create_event::tests::get_database_with_filled_calendar, get_calendars::get_calendars,
+        create::event::tests::get_database_with_filled_calendar, get::calendars::get_calendars,
         parse_calendar_data::parse_calendar,
     };
     use crate::core::init_db::CalendarTable;

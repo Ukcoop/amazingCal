@@ -7,7 +7,7 @@ use serde::Deserialize;
 use crate::core::security::validate_request::validate_request;
 use crate::{AppState, ErrorResponse};
 
-use crate::core::calendar::create_event::create_event;
+use crate::core::calendar::create::event::create_event;
 
 use crate::core::calendar::shared::Time;
 
@@ -53,13 +53,13 @@ pub mod tests {
     use actix_web::{http, http::header, test, App};
     use serde_json::json;
 
-    use crate::core::calendar::create_event::tests::get_database_with_filled_calendar;
+    use crate::core::calendar::create::event::tests::get_database_with_filled_calendar;
     use crate::core::init_db::{CalendarTable, EventTable};
     use crate::services::database::Database;
 
     use crate::routes::get::user_data::tests::create_valid_token;
 
-    use crate::core::calendar::{get_calendars::get_calendars, get_events::get_events};
+    use crate::core::calendar::{get::calendars::get_calendars, get::events::get_events};
 
     #[actix_web::test]
     async fn test_api_create_event() {
