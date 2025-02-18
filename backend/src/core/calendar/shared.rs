@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Time {
     pub year: u16,
     pub month: u8,

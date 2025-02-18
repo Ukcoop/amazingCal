@@ -16,7 +16,7 @@ pub async fn get_user_data(uuid: &str, database: &Database) -> Result<UserData, 
     let mut calendars_from_db: Vec<CalendarTable> = get_calendars(uuid, database).await?;
 
     if calendars_from_db.is_empty() {
-        create_calendar(uuid.to_owned(), "default".to_string(), database).await?;
+        create_calendar(&uuid.to_string(), &"default".to_string(), database).await?;
         calendars_from_db = get_calendars(uuid, database).await?;
     }
 

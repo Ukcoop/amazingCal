@@ -6,11 +6,13 @@ use sqlx::{
     {Error, FromRow, Pool, Postgres, Sqlite},
 };
 
+#[derive(Clone)]
 enum DbType {
     Postgress,
     Sqlite,
 }
 
+#[derive(Clone)]
 pub struct Database {
     db_type: DbType,
     postgres_pool: Option<Pool<Postgres>>,

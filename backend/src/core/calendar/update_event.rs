@@ -7,11 +7,11 @@ use super::shared::Time;
 
 use super::get_events::get_event;
 
-async fn update_event(
+pub async fn update_event(
     uuid: &String,
-    name: String,
-    start: Time,
-    end: Time,
+    name: &String,
+    start: &Time,
+    end: &Time,
     database: &Database,
 ) -> Result<(), Error> {
     let event_from_db: Vec<EventTable> = get_event(uuid, database).await?;
@@ -33,7 +33,7 @@ async fn update_event(
     database
         .write_db(
             "UPDATE events SET name = $1 WHERE uuid = $2",
-            vec![name, uuid.to_string()],
+            vec![name.to_string(), uuid.to_string()],
         )
         .await?;
 
@@ -87,9 +87,9 @@ mod tests {
 
         match update_event(
             &parsed_calendar.events[0].uuid,
-            "New years day".to_string(),
-            start,
-            end,
+            &"New years day".to_string(),
+            &start,
+            &end,
             &database,
         )
         .await

@@ -4,13 +4,13 @@ use crate::services::database::Database;
 
 pub async fn update_calendar(
     uuid: &String,
-    name: String,
+    name: &String,
     database: &Database,
 ) -> Result<(), Error> {
     database
         .write_db(
             "UPDATE calendars SET name = $1 WHERE uuid = $2",
-            vec![name, uuid.to_string()],
+            vec![name.to_string(), uuid.to_string()],
         )
         .await?;
     return Ok(());
@@ -37,7 +37,7 @@ mod tests {
                 }
             };
 
-        match update_calendar(&calendars_from_db[0].uuid, "testy".to_string(), &database).await {
+        match update_calendar(&calendars_from_db[0].uuid, &"testy".to_string(), &database).await {
             Ok(_) => {}
             Err(e) => {
                 panic!("Error: failed to update calendar. {}", e)

@@ -6,10 +6,10 @@ use crate::services::database::Database;
 use super::shared::Time;
 
 pub async fn create_event(
-    calendar_id: String,
-    name: String,
-    start: Time,
-    end: Time,
+    calendar_id: &String,
+    name: &String,
+    start: &Time,
+    end: &Time,
     database: &Database,
 ) -> Result<(), Error> {
     let event_id = Uuid::new_v4().to_string();
@@ -33,7 +33,7 @@ pub async fn create_event(
     database
         .write_db(
             "INSERT INTO events (calendar_id, uuid, start_id, end_id, name) VALUES ($1, $2, $3, $4, $5)",
-            vec![calendar_id, event_id, start_id, end_id, name],
+            vec![calendar_id.to_string(), event_id, start_id, end_id, name.to_string()],
         )
         .await?;
 
@@ -52,7 +52,7 @@ pub mod tests {
     pub async fn get_database_with_filled_calendar() -> Database {
         let database: Database = get_testable_db().await;
 
-        match create_calendar("test_user".to_string(), "test".to_string(), &database).await {
+        match create_calendar(&"test_user".to_string(), &"test".to_string(), &database).await {
             Ok(_) => {}
             Err(e) => {
                 panic!("Error: failed to add calendar. {}", e)
@@ -84,10 +84,10 @@ pub mod tests {
         };
 
         match create_event(
-            calendars_from_db[0].uuid.clone(),
-            "New years eve".to_string(),
-            start,
-            end,
+            &calendars_from_db[0].uuid,
+            &"New years eve".to_string(),
+            &start,
+            &end,
             &database,
         )
         .await

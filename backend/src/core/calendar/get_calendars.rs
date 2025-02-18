@@ -26,7 +26,7 @@ mod tests {
     async fn test_get_calendars() {
         let database: Database = get_testable_db().await;
 
-        match create_calendar("test_user".to_string(), "test".to_string(), &database).await {
+        match create_calendar(&"test_user".to_string(), &"test".to_string(), &database).await {
             Ok(_) => {}
             Err(e) => {
                 panic!("Error: failed to add calendar. {}", e)
