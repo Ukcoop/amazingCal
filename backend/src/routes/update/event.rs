@@ -69,7 +69,7 @@ pub mod tests {
             App::new()
                 .app_data(Data::new(AppState {
                     jwt_secret: "my_secret".to_string(),
-                    database: database.clone(),
+                    database: database.clone().into(),
                 }))
                 .service(api_update_event),
         )

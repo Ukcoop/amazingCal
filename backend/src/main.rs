@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use actix_cors::Cors;
 use actix_web::{
     web::Data,
@@ -26,7 +28,7 @@ struct ErrorResponse {
 }
 
 pub struct AppState {
-    pub database: Database,
+    pub database: Arc<Database>,
     pub jwt_secret: String,
 }
 
@@ -46,7 +48,7 @@ async fn main() -> std::io::Result<()> {
 
     let use_memory_db = database_url == *"";
 
-    let database = convert_sqlx_error(Database::new_db(use_memory_db, database_url).await)?;
+    let database = convert_sqlx_error(Database::new_db(use_memory_db, false, database_url).await)?;
 
     match init_db(&database).await {
         Ok(_) => {}
@@ -58,7 +60,7 @@ async fn main() -> std::io::Result<()> {
 
     let shared_state = Data::new(AppState {
         jwt_secret,
-        database,
+        database: Arc::new(database),
     });
 
     return HttpServer::new(move || {

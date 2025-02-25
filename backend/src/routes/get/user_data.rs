@@ -58,7 +58,7 @@ pub mod tests {
             App::new()
                 .app_data(Data::new(AppState {
                     jwt_secret: "my_secret".to_string(),
-                    database,
+                    database: database.into(),
                 }))
                 .service(api_get_user_data),
         )

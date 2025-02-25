@@ -68,7 +68,8 @@ pub mod tests {
     use crate::services::database::convert_sqlx_error;
 
     pub async fn get_testable_db() -> Database {
-        let database = match convert_sqlx_error(Database::new_db(true, "".to_string()).await) {
+        let database = match convert_sqlx_error(Database::new_db(true, true, "".to_string()).await)
+        {
             Ok(result) => result,
             Err(e) => {
                 panic!("Error: failed to initialize database. {}", e);

@@ -27,15 +27,23 @@ pub fn convert_sqlx_error<T>(result: Result<T, Error>) -> Result<T, io::Error> {
 }
 
 impl Database {
-    pub async fn new_db(in_memory: bool, database_url: String) -> Result<Database, sqlx::Error> {
+    pub async fn new_db(
+        in_memory: bool,
+        test: bool,
+        database_url: String,
+    ) -> Result<Database, sqlx::Error> {
         return match in_memory {
             true => Ok(Database {
                 db_type: DbType::Sqlite,
                 postgres_pool: None,
                 sqlite_pool: Some(
                     SqlitePoolOptions::new()
-                        .max_connections(5)
-                        .connect(":memory:")
+                        .max_connections(1)
+                        .connect(if test {
+                            ":memory:"
+                        } else {
+                            "file:memdb?mode=memory&cache=shared"
+                        })
                         .await?,
                 ),
             }),
@@ -140,7 +148,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_new_db() {
-        match Database::new_db(true, "".to_string()).await {
+        match Database::new_db(true, true, "".to_string()).await {
             Ok(_) => {}
             Err(e) => {
                 panic!("Error: failed to initialize database. {}", e)
@@ -150,7 +158,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_write_db() {
-        let database: Database = match Database::new_db(true, "".to_string()).await {
+        let database: Database = match Database::new_db(true, true, "".to_string()).await {
             Ok(result) => result,
             Err(e) => {
                 panic!("Error: failed to initialize database. {}", e)
@@ -188,7 +196,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_read_db() {
-        let database: Database = match Database::new_db(true, "".to_string()).await {
+        let database: Database = match Database::new_db(true, true, "".to_string()).await {
             Ok(result) => result,
             Err(e) => {
                 panic!("Error: failed to initialize database. {}", e)
