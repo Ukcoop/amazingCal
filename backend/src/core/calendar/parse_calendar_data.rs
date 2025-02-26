@@ -8,14 +8,14 @@ use crate::core::init_db::{CalendarTable, EventTable, TimeTable};
 pub async fn parse_event(event_from_db: &EventTable, database: &Database) -> Result<Event, Error> {
     let start_time = database
         .read_db::<TimeTable>(
-            "SELECT uuid, year, month, day, hour, minute FROM times WHERE uuid == $1",
+            "SELECT uuid, year, month, day, hour, minute FROM times WHERE uuid = $1",
             vec![event_from_db.start_id.clone()],
         )
         .await?;
 
     let end_time = database
         .read_db::<TimeTable>(
-            "SELECT uuid, year, month, day, hour, minute FROM times WHERE uuid == $1",
+            "SELECT uuid, year, month, day, hour, minute FROM times WHERE uuid = $1",
             vec![event_from_db.end_id.clone()],
         )
         .await?;
@@ -52,7 +52,7 @@ pub async fn parse_calendar(
 
     let events_from_db = database
         .read_db::<EventTable>(
-            "SELECT calendar_id, uuid, name, start_id, end_id FROM events WHERE calendar_id == $1",
+            "SELECT calendar_id, uuid, name, start_id, end_id FROM events WHERE calendar_id = $1",
             vec![calendar_from_db.uuid.clone()],
         )
         .await?;
@@ -85,7 +85,7 @@ mod tests {
 
         let events_from_db = match database
             .read_db::<EventTable>(
-                "SELECT calendar_id, uuid, name, start_id, end_id FROM events WHERE calendar_id == $1",
+                "SELECT calendar_id, uuid, name, start_id, end_id FROM events WHERE calendar_id = $1",
                 vec![calendars_from_db[0].uuid.clone()],
             )
             .await

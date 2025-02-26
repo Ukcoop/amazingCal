@@ -6,7 +6,7 @@ use crate::services::database::Database;
 pub async fn get_events(calendar_id: &str, database: &Database) -> Result<Vec<EventTable>, Error> {
     return database
         .read_db::<EventTable>(
-            "SELECT calendar_id, uuid, start_id, end_id, name FROM events WHERE calendar_id == $1",
+            "SELECT calendar_id, uuid, start_id, end_id, name FROM events WHERE calendar_id = $1",
             vec![calendar_id.to_owned()],
         )
         .await;
@@ -15,7 +15,7 @@ pub async fn get_events(calendar_id: &str, database: &Database) -> Result<Vec<Ev
 pub async fn get_event(event_id: &str, database: &Database) -> Result<Vec<EventTable>, Error> {
     return database
         .read_db::<EventTable>(
-            "SELECT calendar_id, uuid, start_id, end_id, name FROM events WHERE uuid == $1",
+            "SELECT calendar_id, uuid, start_id, end_id, name FROM events WHERE uuid = $1",
             vec![event_id.to_owned()],
         )
         .await;

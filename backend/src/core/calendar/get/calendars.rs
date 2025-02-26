@@ -9,7 +9,7 @@ pub async fn get_calendars(
 ) -> Result<Vec<CalendarTable>, Error> {
     return database
         .read_db::<CalendarTable>(
-            "SELECT user_id, uuid, name FROM calendars WHERE user_id == $1",
+            "SELECT user_id, uuid, name FROM calendars WHERE user_id = $1",
             vec![user_id.to_owned()],
         )
         .await;
