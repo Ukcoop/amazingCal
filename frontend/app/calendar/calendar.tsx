@@ -20,8 +20,6 @@ import AddIcon from '@mui/icons-material/Add';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 
-import CalendarData from '../core/calendar';
-
 interface calendar {
   // more of the calendar type will be added when they are needed
   name: string;
@@ -35,9 +33,6 @@ export default function Calendar({ baseUrl }: { baseUrl: string }) {
   const [calendars, setCalendars]: [Array<calendar>, any] = useState([]);
 
   const [menu, setMenu] = useState(false);
-
-  const calendarData = new CalendarData();
-  console.log(calendarData.yearData);
 
   const toggleMenu = () => {
     setMenu(!menu);
