@@ -11,19 +11,27 @@ function getDaysInMonth(date: Date) {
 }
 
 export default class CalendarData {
-  yearData: Array<MonthData>;
-
-  constructor() {
-    this.yearData = [];
-
+  getYearData(year: number) {
+    const yearData = [];
     for (let i = 0; i < 12; i++) {
-      const day = new Date(2025, i, 1);
+      const day = new Date(year, i, 1);
       const month: MonthData = {
         weekIndex: day.getDay(),
         daysInMonth: getDaysInMonth(day)
       };
 
-      this.yearData.push(month);
+      yearData.push(month);
     }
+
+    return yearData;
+  }
+
+  getTodaysDate() {
+    const date = new Date();
+    const month = date.getMonth();
+    const year = date.getFullYear();
+    const day = date.getDate();
+
+    return [month, year, day];
   }
 }

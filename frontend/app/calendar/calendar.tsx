@@ -20,9 +20,17 @@ import AddIcon from '@mui/icons-material/Add';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 
+import CalendarData from '../core/calendar';
+
 interface calendar {
   // more of the calendar type will be added when they are needed
   name: string;
+}
+
+function getMonthName(monthNumber: number) {
+  const date = new Date();
+  date.setMonth(monthNumber);
+  return date.toLocaleString('en-US', { month: 'long' });
 }
 
 export default function Calendar({ baseUrl }: { baseUrl: string }) {
@@ -34,8 +42,30 @@ export default function Calendar({ baseUrl }: { baseUrl: string }) {
 
   const [menu, setMenu] = useState(false);
 
+  const [todaysMonth, todaysYear] = new CalendarData().getTodaysDate();
+  const [month, setMonth] = useState(todaysMonth);
+  const [year, setYear] = useState(todaysYear);
+
   const toggleMenu = () => {
     setMenu(!menu);
+  };
+
+  const fowardOneMonth = () => {
+    if (month == 11) {
+      setMonth(0);
+      setYear(year + 1);
+    } else {
+      setMonth(month + 1);
+    }
+  };
+
+  const backwardOneMonth = () => {
+    if (month == 0) {
+      setMonth(11);
+      setYear(year - 1);
+    } else {
+      setMonth(month - 1);
+    }
   };
 
   useEffect(() => {
@@ -91,24 +121,14 @@ export default function Calendar({ baseUrl }: { baseUrl: string }) {
           <Button testId="cy-menu" text={<MenuIcon />} style="secondary" width="w-max" onClick={toggleMenu} />
           <a className="text-2xl pl-4 pr-2">amazingCal</a>
           <div className="flex px-2">
-            <div
-              className={clickableElementClass}
-              onClick={() => {
-                console.log('Left');
-              }}
-            >
+            <div className={clickableElementClass} onClick={backwardOneMonth}>
               <KeyboardArrowLeftIcon fontSize="large" />
             </div>
-            <div
-              className={clickableElementClass}
-              onClick={() => {
-                console.log('Right');
-              }}
-            >
+            <div className={clickableElementClass} onClick={fowardOneMonth}>
               <KeyboardArrowRightIcon fontSize="large" />
             </div>
           </div>
-          <a className="text-2xl">February 2025</a>
+          <a className="text-2xl">{`${getMonthName(month)} ${year}`}</a>
         </div>
         <div className="flex items-center">
           <DropDown element={<p>Month</p>} />
@@ -145,7 +165,7 @@ export default function Calendar({ baseUrl }: { baseUrl: string }) {
             </div>
           )}
         </div>
-        <CalendarView view="Month" />
+        <CalendarView view="Month" month={month} year={year} />
       </div>
     </div>
   );

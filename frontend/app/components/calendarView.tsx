@@ -1,5 +1,3 @@
-'use client';
-
 import MonthView from './views/monthView';
 import WeekView from './views/weekView';
 
@@ -10,11 +8,13 @@ type Views = 'Month' | 'Week';
 
 interface CalendarViewParams {
   view: Views;
+  month: number;
+  year: number;
 }
 
-export default function CalendarView({ view }: CalendarViewParams) {
+export default function CalendarView({ view, month, year }: CalendarViewParams) {
   if (view == 'Month') {
-    return <MonthView data={data} month={1}/>;
+    return <MonthView data={data} month={month} year={year} />;
   } else if (view == 'Week') {
     return <WeekView />;
   } else {
