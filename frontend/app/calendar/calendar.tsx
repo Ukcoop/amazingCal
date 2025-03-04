@@ -15,16 +15,21 @@ import DropDown from '../components/dropDown';
 import CalendarView from '../components/calendarView';
 
 import MenuIcon from '@mui/icons-material/Menu';
+// @ts-expect-error no decloration file
 import AddIcon from '@mui/icons-material/Add';
 
+// @ts-expect-error no decloration file
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
+// @ts-expect-error no decloration file
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 
 import CalendarData from '../core/calendar';
+import { EventDisplayManager, Event } from '../core/eventManager';
 
-interface calendar {
+interface Calendar {
   // more of the calendar type will be added when they are needed
   name: string;
+  events: Array<Event>;
 }
 
 function getMonthName(monthNumber: number) {
@@ -38,7 +43,7 @@ export default function Calendar({ baseUrl }: { baseUrl: string }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState('');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [calendars, setCalendars]: [Array<calendar>, any] = useState([]);
+  const [calendars, setCalendars]: [Array<Calendar>, any] = useState([]);
 
   const [menu, setMenu] = useState(false);
 
@@ -97,7 +102,14 @@ export default function Calendar({ baseUrl }: { baseUrl: string }) {
           }
         });
 
-        console.log(response.data);
+        const calendars = response.data.calendars;
+
+        for (let i = 0; i < calendars.length; i++) {
+          for (let j = 0; j < calendars[i].events.length; j++) {
+            EventDisplayManager.getInstance().addEvent(calendars[i].name, calendars[i].events[j]);
+          }
+        }
+
         setCalendars(response.data.calendars);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (e: any) {

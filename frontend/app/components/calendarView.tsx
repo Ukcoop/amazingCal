@@ -2,6 +2,7 @@ import MonthView from './views/monthView';
 import WeekView from './views/weekView';
 
 import CalendarData from '../core/calendar';
+
 const data = new CalendarData();
 
 type Views = 'Month' | 'Week';
