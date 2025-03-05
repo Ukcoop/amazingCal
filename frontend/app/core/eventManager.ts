@@ -10,7 +10,7 @@ export type Event = {
   name: string;
   uuid: string;
   start: Time;
-  End: Time;
+  end: Time;
 };
 
 interface EventsObject {

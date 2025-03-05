@@ -11,11 +11,14 @@ interface CalendarViewParams {
   view: Views;
   month: number;
   year: number;
+  modal: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setModal: any;
 }
 
-export default function CalendarView({ view, month, year }: CalendarViewParams) {
+export default function CalendarView({ view, month, year, modal, setModal }: CalendarViewParams) {
   if (view == 'Month') {
-    return <MonthView data={data} month={month} year={year} />;
+    return <MonthView data={data} month={month} year={year} modal={modal} setModal={setModal} />;
   } else if (view == 'Week') {
     return <WeekView />;
   } else {

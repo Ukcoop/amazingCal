@@ -1,5 +1,6 @@
 'use client';
 
+// @ts-expect-error no decloration file
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 // import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 
@@ -10,7 +11,7 @@ interface DropDownParams {
 
 export default function DropDown({ element }: DropDownParams) {
   return (
-    <div className="flex items-center p-1 rounded-md hover:bg-gray-900">
+    <div className="flex items-center p-1 rounded-md hover:bg-gray-200 hover:dark:bg-gray-900">
       <ArrowDropDownIcon fontSize="large" />
       {element}
     </div>

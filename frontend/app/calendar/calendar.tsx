@@ -12,6 +12,11 @@ import Jdenticon from 'react-jdenticon';
 
 import Button from '../components/button';
 import DropDown from '../components/dropDown';
+import Modal from '../components/modal';
+
+import CreateEvent from '../components/modals/createEvent';
+import CreateCalendar from '../components/modals/createCalendar';
+
 import CalendarView from '../components/calendarView';
 
 import MenuIcon from '@mui/icons-material/Menu';
@@ -27,7 +32,6 @@ import CalendarData from '../core/calendar';
 import { EventDisplayManager, Event } from '../core/eventManager';
 
 interface Calendar {
-  // more of the calendar type will be added when they are needed
   name: string;
   events: Array<Event>;
 }
@@ -46,6 +50,7 @@ export default function Calendar({ baseUrl }: { baseUrl: string }) {
   const [calendars, setCalendars]: [Array<Calendar>, any] = useState([]);
 
   const [menu, setMenu] = useState(false);
+  const [modal, setModal] = useState<string | null>(null);
 
   const [todaysMonth, todaysYear] = new CalendarData().getTodaysDate();
   const [month, setMonth] = useState(todaysMonth);
@@ -124,7 +129,7 @@ export default function Calendar({ baseUrl }: { baseUrl: string }) {
     getUserData();
   }, [token, router, baseUrl]);
 
-  const clickableElementClass = 'p-1 rounded-md hover:bg-gray-900';
+  const clickableElementClass = 'p-1 rounded-md hover:bg-gray-200 hover:dark:bg-gray-900';
 
   return (
     <div className="flex flex-col p-5 h-screen max-h-screen bg-white dark:bg-gray-950">
@@ -160,15 +165,19 @@ export default function Calendar({ baseUrl }: { baseUrl: string }) {
             style="secondary"
             width="w-max"
             onClick={() => {
-              console.log('New event');
+              setModal('CreateEvent');
             }}
           />
           {menu && (
             <div>
-              <div className="flex justify-between my-2">
+              <div className="flex justify-between items-center my-2">
                 <p>Calendars</p>
-                <div className="flex items-center">
-                  <AddIcon />
+                <div className={`flex items-center ${clickableElementClass}`}>
+                  <AddIcon
+                    onClick={() => {
+                      setModal('CreateCaledar');
+                    }}
+                  />
                 </div>
               </div>
               {calendars.map((calendar, index) => {
@@ -177,8 +186,10 @@ export default function Calendar({ baseUrl }: { baseUrl: string }) {
             </div>
           )}
         </div>
-        <CalendarView view="Month" month={month} year={year} />
+        <CalendarView view="Month" month={month} year={year} modal={modal} setModal={setModal} />
       </div>
+      {modal == 'CreateEvent' && <Modal title="Create event" component={<CreateEvent />} setModal={setModal} />}
+      {modal == 'CreateCaledar' && <Modal title="Create calendar" component={<CreateCalendar />} setModal={setModal} />}
     </div>
   );
 }
