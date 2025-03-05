@@ -50,11 +50,15 @@ export default function Calendar({ baseUrl }: { baseUrl: string }) {
   const [calendars, setCalendars]: [Array<Calendar>, any] = useState([]);
 
   const [menu, setMenu] = useState(false);
+  const [open, setOpen] = useState('None');
+  const [view, setView] = useState<'Month' | 'Week'>('Month');
   const [modal, setModal] = useState<string | null>(null);
 
   const [todaysMonth, todaysYear] = new CalendarData().getTodaysDate();
   const [month, setMonth] = useState(todaysMonth);
   const [year, setYear] = useState(todaysYear);
+
+  const supabase = createClient();
 
   const toggleMenu = () => {
     setMenu(!menu);
@@ -78,9 +82,13 @@ export default function Calendar({ baseUrl }: { baseUrl: string }) {
     }
   };
 
-  useEffect(() => {
-    const supabase = createClient();
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    // Optionally, redirect the user to a different page
+    window.location.href = '/login';
+  };
 
+  useEffect(() => {
     async function fetchSession() {
       const { data, error } = await supabase.auth.getSession();
 
@@ -93,7 +101,7 @@ export default function Calendar({ baseUrl }: { baseUrl: string }) {
     }
 
     fetchSession();
-  }, [router]);
+  }, [router, supabase.auth]);
 
   useEffect(() => {
     if (token == '') return;
@@ -148,8 +156,43 @@ export default function Calendar({ baseUrl }: { baseUrl: string }) {
           <a className="text-2xl">{`${getMonthName(month)} ${year}`}</a>
         </div>
         <div className="flex items-center">
-          <DropDown element={<p>Month</p>} />
-          <DropDown element={<Jdenticon size="40" value={user?.email} />} />
+          <DropDown
+            id="viewSelector"
+            open={open}
+            setOpen={setOpen}
+            element={<p>{view}</p>}
+            options={[
+              <a
+                key="option-month-0"
+                onClick={() => {
+                  setView('Month');
+                  setOpen('None');
+                }}
+              >
+                Month
+              </a>,
+              <a
+                key="option-month-1"
+                onClick={() => {
+                  setView('Week');
+                  setOpen('None');
+                }}
+              >
+                Week
+              </a>
+            ]}
+          />
+          <DropDown
+            id="account"
+            open={open}
+            setOpen={setOpen}
+            element={<Jdenticon size="40" value={user?.email} />}
+            options={[
+              <a key="option-sign-out" onClick={handleSignOut}>
+                Sign out
+              </a>
+            ]}
+          />
         </div>
       </div>
       <div className="flex h-full">
@@ -186,7 +229,7 @@ export default function Calendar({ baseUrl }: { baseUrl: string }) {
             </div>
           )}
         </div>
-        <CalendarView view="Month" month={month} year={year} modal={modal} setModal={setModal} />
+        <CalendarView view={view} month={month} year={year} modal={modal} setModal={setModal} />
       </div>
       {modal == 'CreateEvent' && <Modal title="Create event" component={<CreateEvent />} setModal={setModal} />}
       {modal == 'CreateCaledar' && <Modal title="Create calendar" component={<CreateCalendar />} setModal={setModal} />}
