@@ -99,7 +99,7 @@ export default function MonthView({ data, month, year, modal, setModal }: MonthV
     const isThisDay = month == todaysMonth && year == todaysYear && i + 1 == todaysDay;
     const dayKey = `${'default'}-${year}-${month}-${i}`;
 
-    const showRightEdge = (i + previousMonth.daysInMonth) % 7 !== 0;
+    const showRightEdge = (i + currentMonth.weekIndex + 1) % 7 !== 0;
     const showBottomEdge = i + currentMonth.weekIndex < totalDays - 7;
 
     dayCompoents.push(
@@ -122,7 +122,7 @@ export default function MonthView({ data, month, year, modal, setModal }: MonthV
     const isThisDay = month + 1 == todaysMonth && year == todaysYear && i + 1 == todaysDay;
     const dayKey = `${'default'}-${year}-${month}-${i}`;
 
-    const showRightEdge = (i + previousMonth.daysInMonth + currentMonth.daysInMonth) % 7 !== 0;
+    const showRightEdge = (i + currentMonth.weekIndex + currentMonth.daysInMonth + 1) % 7 !== 0;
     const showBottomEdge = i + currentMonth.weekIndex + currentMonth.daysInMonth < totalDays - 7;
 
     dayCompoents.push(

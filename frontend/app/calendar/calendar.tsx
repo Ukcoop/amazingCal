@@ -88,6 +88,22 @@ export default function Calendar({ baseUrl }: { baseUrl: string }) {
     window.location.href = '/login';
   };
 
+  const handleViewMenu = (index: number) => {
+    if(index == 0) {
+      setView("Month");
+    } else {
+      setView("Week");
+    }
+    setOpen("None");
+  }
+
+  const handleAccountMenu = (index: number) => {
+    if(index == 0) {
+      handleSignOut();
+    }
+    setOpen("None");
+  }
+
   useEffect(() => {
     async function fetchSession() {
       const { data, error } = await supabase.auth.getSession();
@@ -116,6 +132,7 @@ export default function Calendar({ baseUrl }: { baseUrl: string }) {
         });
 
         const calendars = response.data.calendars;
+        EventDisplayManager.getInstance().clearEvents();
 
         for (let i = 0; i < calendars.length; i++) {
           for (let j = 0; j < calendars[i].events.length; j++) {
@@ -158,40 +175,21 @@ export default function Calendar({ baseUrl }: { baseUrl: string }) {
         <div className="flex items-center">
           <DropDown
             id="viewSelector"
+            minimal={false}
             open={open}
             setOpen={setOpen}
             element={<p>{view}</p>}
-            options={[
-              <a
-                key="option-month-0"
-                onClick={() => {
-                  setView('Month');
-                  setOpen('None');
-                }}
-              >
-                Month
-              </a>,
-              <a
-                key="option-month-1"
-                onClick={() => {
-                  setView('Week');
-                  setOpen('None');
-                }}
-              >
-                Week
-              </a>
-            ]}
+            options={["Month", "Week"]}
+            returnIndex={handleViewMenu}
           />
           <DropDown
             id="account"
+            minimal={false}
             open={open}
             setOpen={setOpen}
             element={<Jdenticon size="40" value={user?.email} />}
-            options={[
-              <a key="option-sign-out" onClick={handleSignOut}>
-                Sign out
-              </a>
-            ]}
+            options={["Sign out"]}
+            returnIndex={handleAccountMenu}
           />
         </div>
       </div>
@@ -231,7 +229,7 @@ export default function Calendar({ baseUrl }: { baseUrl: string }) {
         </div>
         <CalendarView view={view} month={month} year={year} modal={modal} setModal={setModal} />
       </div>
-      {modal == 'CreateEvent' && <Modal title="Create event" component={<CreateEvent />} setModal={setModal} />}
+      {modal == 'CreateEvent' && <Modal title="Create event" component={<CreateEvent month={2} year={2025}/>} setModal={setModal} />}
       {modal == 'CreateCaledar' && <Modal title="Create calendar" component={<CreateCalendar />} setModal={setModal} />}
     </div>
   );

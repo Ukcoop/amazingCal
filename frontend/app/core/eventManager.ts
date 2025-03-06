@@ -43,4 +43,23 @@ export class EventDisplayManager {
   public getEvents(): EventsObject {
     return this.events;
   }
+
+  public clearEvents() {
+    this.events = {};
+  }
+}
+
+export class EventManager {
+  private static instance: EventManager;
+  
+  public static getInstance(): EventManager {
+    if(!EventManager.instance) {
+      EventManager.instance = new EventManager();
+    }
+    return EventManager.instance;
+  }
+
+  public postEvent() {
+    console.log("Post event");
+  }
 }
