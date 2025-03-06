@@ -1,0 +1,20 @@
+[package]
+name = "frontend"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+yew = { git = "https://github.com/yewstack/yew/", features = ["csr"] }
+yew-router = { git = "https://github.com/yewstack/yew.git" }
+
+[lints.clippy]
+needless_return = "allow"
+needless_range_loop = "allow"
+
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+
+redundant_clone = "deny"
+implicit_clone = "deny"
+cloned_instead_of_copied = "deny"
