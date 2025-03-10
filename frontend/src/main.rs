@@ -20,7 +20,7 @@ enum Route {
 fn switch(routes: Route) -> Html {
     return match routes {
         Route::Home => pages::home::home(),
-        Route::Login => pages::login::login(),
+        Route::Login => html! {<pages::login::Login />},
         Route::Calendar => pages::calendar::calendar(),
         Route::NotFound => pages::not_found::not_found(),
     };

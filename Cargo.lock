@@ -924,6 +924,10 @@ dependencies = [
 name = "frontend"
 version = "0.1.0"
 dependencies = [
+ "once_cell",
+ "regex",
+ "wasm-bindgen",
+ "web-sys",
  "yew",
  "yew-router",
 ]
