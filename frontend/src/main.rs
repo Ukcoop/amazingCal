@@ -2,10 +2,11 @@ use yew::prelude::*;
 use yew_router::prelude::*;
 
 mod components;
+mod core;
 mod pages;
 
 #[derive(Clone, Routable, PartialEq)]
-enum Route {
+pub enum Route {
     #[at("/")]
     Home,
     #[at("/login")]
@@ -21,7 +22,7 @@ fn switch(routes: Route) -> Html {
     return match routes {
         Route::Home => pages::home::home(),
         Route::Login => html! {<pages::login::Login />},
-        Route::Calendar => pages::calendar::calendar(),
+        Route::Calendar => html! {<pages::calendar::Calendar />},
         Route::NotFound => pages::not_found::not_found(),
     };
 }

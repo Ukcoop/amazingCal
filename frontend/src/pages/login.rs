@@ -1,7 +1,11 @@
 use once_cell::sync::Lazy;
-use regex::Regex;
-use web_sys::console;
+use wasm_bindgen::prelude::{wasm_bindgen, JsValue};
+use wasm_bindgen_futures::spawn_local;
+
 use yew::{function_component, html, use_state, Callback, Html, MouseEvent, UseStateHandle};
+use yew_router::hooks::use_navigator;
+
+use crate::Route;
 
 use crate::components::main::{
     button::{Button, ButtonStyle},
@@ -9,56 +13,70 @@ use crate::components::main::{
     status::{Status, StatusCode, StatusObject},
 };
 
-static HAS_LOWERCASE: Lazy<Result<Regex, regex::Error>> = Lazy::new(|| Regex::new(r"[a-z]"));
-static HAS_UPPERCASE: Lazy<Result<Regex, regex::Error>> = Lazy::new(|| Regex::new(r"[A-Z]"));
-static HAS_DIGIT: Lazy<Result<Regex, regex::Error>> = Lazy::new(|| Regex::new(r"\d"));
-static HAS_SYMBOL: Lazy<Result<Regex, regex::Error>> =
-    Lazy::new(|| Regex::new(r#"[!@#$%^&*(),.?":{}|<>_\-+=~`\[\]\\;/]"#));
+use crate::core::auth::is_valid_login;
 
-fn is_password_valid(password: &str) -> bool {
-    password.len() >= 8
-        && HAS_LOWERCASE.as_ref().is_ok_and(|r| r.is_match(password))
-        && HAS_UPPERCASE.as_ref().is_ok_and(|r| r.is_match(password))
-        && HAS_DIGIT.as_ref().is_ok_and(|r| r.is_match(password))
-        && HAS_SYMBOL.as_ref().is_ok_and(|r| r.is_match(password))
+static PUBLIC_SUPABASE_URL: Lazy<&str> =
+    Lazy::new(|| option_env!("PUBLIC_SUPABASE_URL").unwrap_or(""));
+static PUBLIC_ANON_KEY: Lazy<&str> = Lazy::new(|| option_env!("PUBLIC_ANON_KEY").unwrap_or(""));
+
+#[wasm_bindgen(module = "/src/js/auth_handler.js")]
+extern "C" {
+    pub fn init_supabase(supabase_url: String, anon_key: String);
+    pub async fn handle_login(email: String, password: String) -> JsValue;
+    pub async fn handle_signup(email: String, password: String) -> JsValue;
 }
 
-fn is_valid_login(
-    email: &UseStateHandle<String>,
-    password: &UseStateHandle<String>,
-    status: &UseStateHandle<StatusObject>,
+async fn process_signup(email: String, password: String, status: UseStateHandle<StatusObject>) {
+    let error = handle_signup(email, password).await;
+    let parsed_error = error
+        .as_string()
+        .unwrap_or_else(|| "Something went wrong, please try again.".to_string());
+
+    if parsed_error != "null" {
+        status.set(StatusObject {
+            code: StatusCode::Error,
+            data: parsed_error,
+        });
+    } else {
+        status.set(StatusObject {
+            code: StatusCode::Success,
+            data: "Signup successful, check your inbox to verify your account.".to_string(),
+        });
+    }
+}
+
+async fn process_login(
+    email: String,
+    password: String,
+    status: UseStateHandle<StatusObject>,
 ) -> bool {
-    if email.is_empty() || password.is_empty() {
-        let error = format!(
-            "The following fields are not filled out:\n{}{}",
-            if email.is_empty() { "email\n" } else { "" },
-            if password.is_empty() {
-                "password\n"
-            } else {
-                ""
-            },
-        );
+    let error = handle_login(email, password).await;
+    let parsed_error = error
+        .as_string()
+        .unwrap_or_else(|| "Something went wrong, please try again.".to_string());
 
+    if parsed_error != "null" {
         status.set(StatusObject {
             code: StatusCode::Error,
-            data: error,
+            data: parsed_error,
         });
-        return false;
-    }
 
-    if !is_password_valid(password) {
+        return false;
+    } else {
         status.set(StatusObject {
-            code: StatusCode::Error,
-            data: "Your password must contain:\n- One uppercase letter\n- One lowercase letter\n- One digit\n- One special character".to_string(),
+            code: StatusCode::Ok,
+            data: "".to_string(),
         });
-        return false;
-    }
 
-    true
+        return true;
+    }
 }
 
 #[function_component]
 pub fn Login() -> Html {
+    let navigator = use_navigator();
+    init_supabase(PUBLIC_SUPABASE_URL.to_string(), PUBLIC_ANON_KEY.to_string());
+
     let email = use_state(|| "".to_string());
     let password = use_state(|| "".to_string());
     let status = use_state(|| StatusObject {
@@ -74,9 +92,24 @@ pub fn Login() -> Html {
             if is_valid_login(&email, &password, &status) {
                 status.set(StatusObject {
                     code: StatusCode::Loading,
-                    data: "".to_string(),
+                    data: "Logging the user in...".to_string(),
                 });
-                console::log_1(&"Login button clicked!".into());
+
+                let email = email.clone();
+                let password = password.clone();
+                let status = status.clone();
+                let navigator = navigator.clone();
+                spawn_local(async move {
+                    let sucessful =
+                        process_login(email.to_string(), password.to_string(), status.clone())
+                            .await;
+
+                    if sucessful {
+                        if let Some(navigator) = &navigator {
+                            navigator.push(&Route::Calendar);
+                        }
+                    }
+                });
             }
         })
     };
@@ -89,9 +122,14 @@ pub fn Login() -> Html {
             if is_valid_login(&email, &password, &status) {
                 status.set(StatusObject {
                     code: StatusCode::Loading,
-                    data: "".to_string(),
+                    data: "Signing user up...".to_string(),
                 });
-                console::log_1(&"Signup button clicked!".into());
+
+                spawn_local(process_signup(
+                    email.to_string(),
+                    password.to_string(),
+                    status.clone(),
+                ));
             }
         })
     };

@@ -1,0 +1,33 @@
+let supabase;
+
+export function init_supabase(supabase_url, anon_key) {
+  supabase = window.supabase.createClient(supabase_url, anon_key);
+}
+
+export async function handle_login(email, password) {
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  })
+
+  return `${error}`;
+}
+
+export async function handle_signup(email, password) {
+  const { error } = await supabase.auth.signUp({
+    email,
+    password,
+  })
+
+  return `${error}`;
+}
+
+export async function get_session() {
+  const { data, error } = await supabase.auth.getSession();
+
+  if (error || !data.session?.user) {
+    window.location.href = '/login';
+  } else {
+      return data.session.access_token;
+  }
+}

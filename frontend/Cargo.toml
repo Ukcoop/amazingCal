@@ -8,6 +8,7 @@ yew = { git = "https://github.com/yewstack/yew/", features = ["csr"] }
 yew-router = { git = "https://github.com/yewstack/yew.git" }
 
 wasm-bindgen = "0.2.100"
+wasm-bindgen-futures = "0.4.50"
 web-sys = "0.3.77"
 
 once_cell = "1.7.0"

@@ -927,6 +927,7 @@ dependencies = [
  "once_cell",
  "regex",
  "wasm-bindgen",
+ "wasm-bindgen-futures",
  "web-sys",
  "yew",
  "yew-router",
