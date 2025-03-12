@@ -1,7 +1,7 @@
 let supabase;
 
 export function init_supabase(supabase_url, anon_key) {
-  supabase = window.supabase.createClient(supabase_url, anon_key);
+  if (supabase == undefined) supabase = window.supabase.createClient(supabase_url, anon_key);
 }
 
 export async function handle_login(email, password) {

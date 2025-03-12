@@ -22,7 +22,7 @@ fn switch(routes: Route) -> Html {
     return match routes {
         Route::Home => pages::home::home(),
         Route::Login => html! {<pages::login::Login />},
-        Route::Calendar => html! {<pages::calendar::Calendar />},
+        Route::Calendar => html! {<pages::calendar::CalendarPage />},
         Route::NotFound => pages::not_found::not_found(),
     };
 }
