@@ -28,6 +28,26 @@ export async function get_session() {
   if (error || !data.session?.user) {
     window.location.href = '/login';
   } else {
-      return data.session.access_token;
+    return data.session.access_token;
+  }
+}
+
+export async function get_email() {
+  const { data, error } = await supabase.auth.getSession();
+
+  if (error || !data.session?.user) {
+    window.location.href = '/login';
+  } else {
+    return data.session.user.email;
+  }
+}
+
+export async function handle_signout() {
+  const { error } = await supabase.auth.signOut();
+
+  if (error) {
+    console.log(error);
+  } else {
+    window.location.href = '/login';
   }
 }

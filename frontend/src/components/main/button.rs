@@ -1,4 +1,4 @@
-use yew::{function_component, html, Callback, Html, MouseEvent, Properties};
+use yew::{function_component, html, Callback, Children, Html, MouseEvent, Properties};
 
 #[derive(PartialEq)]
 pub enum ButtonStyle {
@@ -8,7 +8,8 @@ pub enum ButtonStyle {
 
 #[derive(Properties, PartialEq)]
 pub struct ButtonParams {
-    pub text: String,
+    #[prop_or_default]
+    pub children: Children,
     pub style: ButtonStyle,
     pub width: String,
     #[prop_or_else(|| Callback::from(|_| ())) ]
@@ -24,7 +25,7 @@ pub fn Button(props: &ButtonParams) -> Html {
 
     return html! {
         <div class={applied_style} onclick={props.on_click.clone()}>
-            <a>{props.text.clone()}</a>
+            { props.children.clone() }
         </div>
     };
 }

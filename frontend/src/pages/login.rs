@@ -143,8 +143,8 @@ pub fn Login() -> Html {
                 <InputField<String> varient="password" value={password.clone()} />
                 <Status status={status.clone()} />
                 <div class="flex flex-col">
-                    <Button text={"Log in"} style={ButtonStyle::Primary} width="w-full" on_click={handle_login} />
-                    <Button text={"Sign up"} style={ButtonStyle::Primary} width="w-full" on_click={handle_signup} />
+                    <Button style={ButtonStyle::Primary} width="w-full" on_click={handle_login}>{"Log in"}</Button>
+                    <Button style={ButtonStyle::Primary} width="w-full" on_click={handle_signup}>{"Sign up"}</Button>
                 </div>
             </div>
         </div>

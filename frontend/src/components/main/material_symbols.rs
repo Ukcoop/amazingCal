@@ -8,7 +8,7 @@ pub struct MaterialSymbolsParams {
 #[function_component]
 pub fn MaterialSymbol(props: &MaterialSymbolsParams) -> Html {
     return html! {
-    <div>
+    <div class="h-[24px]">
         <span class="material-symbols-outlined">
             {props.name.clone()}
         </span>
