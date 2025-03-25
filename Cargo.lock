@@ -956,6 +956,7 @@ dependencies = [
  "chrono",
  "gloo 0.5.0",
  "js-sys",
+ "lazy_static",
  "once_cell",
  "regex",
  "reqwasm",

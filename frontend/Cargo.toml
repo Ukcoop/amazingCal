@@ -23,6 +23,8 @@ regex = "1.5.4"
 chrono = "0.4.40"
 gloo = "0.5"
 
+lazy_static = "1.4.0"
+
 [lints.clippy]
 needless_return = "allow"
 needless_range_loop = "allow"

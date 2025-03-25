@@ -3,7 +3,10 @@ use wasm_bindgen_futures::spawn_local;
 use yew::UseStateHandle;
 use yew_router::prelude::Navigator;
 
-use crate::core::shared::{Calendar, UserData};
+use crate::core::{
+    event_manager::EventDisplayManager,
+    shared::{Calendar, UserData},
+};
 use crate::Route;
 
 use crate::core::api::get;
@@ -37,9 +40,27 @@ pub fn get_user_data(
     }
 
     spawn_local(async move {
+        // First, perform the async API call
         let (res, code) = get::<UserData>("http://localhost:3080/api/get/userData", &token).await;
+
         if code == 200 {
-            calendars.set(res.calendars);
+            calendars.set(res.calendars.clone());
+
+            // Then, acquire the lock to update the events
+            let mut display_manager = match EventDisplayManager::get_instance().lock() {
+                Ok(manager) => manager,
+                Err(_) => {
+                    return;
+                }
+            };
+
+            display_manager.clear_events();
+            for calendar in &res.calendars {
+                for event in &calendar.events {
+                    display_manager.add_event(calendar.name.clone(), event.clone());
+                    web_sys::console::log_1(&JsValue::from_str("added event"));
+                }
+            }
         } else if code == 400 || code == 401 {
             if let Some(navigator) = &navigator {
                 navigator.push(&Route::Login);

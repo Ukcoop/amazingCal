@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Serialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, PartialEq, Debug, Clone)]
 pub struct Time {
     pub year: u16,
     pub month: u8,
@@ -9,7 +9,7 @@ pub struct Time {
     pub minute: u8,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, PartialEq, Debug, Clone)]
 pub struct Event {
     pub name: String,
     pub uuid: String,
@@ -17,7 +17,7 @@ pub struct Event {
     pub end: Time,
 }
 
-#[derive(Deserialize, Serialize, Default, Debug)]
+#[derive(Deserialize, Serialize, Default, Debug, Clone)]
 pub struct Calendar {
     pub name: String,
     pub uuid: String,

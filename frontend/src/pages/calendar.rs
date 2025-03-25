@@ -20,6 +20,8 @@ use crate::components::main::{
     material_symbols::MaterialSymbol,
 };
 
+use crate::components::calendar::view_switcher::CalendarView;
+
 static PUBLIC_SUPABASE_URL: Lazy<&str> =
     Lazy::new(|| option_env!("PUBLIC_SUPABASE_URL").unwrap_or(""));
 static PUBLIC_ANON_KEY: Lazy<&str> = Lazy::new(|| option_env!("PUBLIC_ANON_KEY").unwrap_or(""));
@@ -32,9 +34,9 @@ extern "C" {
     pub fn handle_signout();
 }
 
-pub fn get_month_name(month_number: u32) -> String {
+pub fn get_month_name(month_number: i32) -> String {
     let month = month_number + 1;
-    match NaiveDate::from_ymd_opt(2023, month, 1) {
+    match NaiveDate::from_ymd_opt(2023, month as u32, 1) {
         Some(date) => date.format("%B").to_string(),
         None => "Invalid month".to_string(),
     }
@@ -53,8 +55,8 @@ pub fn CalendarPage() -> Html {
     let view = use_state(|| "Month".to_string());
     let email = use_state(|| "".to_string());
 
-    let month = use_state(|| 2);
-    let year = use_state(|| 2025);
+    let month: UseStateHandle<i32> = use_state(|| 2);
+    let year: UseStateHandle<i32> = use_state(|| 2025);
 
     let navigator_clone = navigator.clone();
     let calendars_clone = calendars.clone();
@@ -184,7 +186,7 @@ pub fn CalendarPage() -> Html {
                         }
                     } else {html! {}}}
                 </div>
-                <div>{"Calendar view"}</div>
+                <CalendarView view={view.clone()} month={month.clone()} year={year.clone()}/>
             </div>
             // modals go here
         </div>
