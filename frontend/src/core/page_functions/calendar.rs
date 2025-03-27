@@ -32,6 +32,7 @@ pub fn get_current_session(navigator: Option<Navigator>, token: UseStateHandle<S
 
 pub fn get_user_data(
     calendars: UseStateHandle<Vec<Calendar>>,
+    active_calendars: UseStateHandle<Vec<String>>,
     navigator: Option<Navigator>,
     token: UseStateHandle<String>,
 ) {
@@ -40,13 +41,18 @@ pub fn get_user_data(
     }
 
     spawn_local(async move {
-        // First, perform the async API call
         let (res, code) = get::<UserData>("http://localhost:3080/api/get/userData", &token).await;
 
         if code == 200 {
             calendars.set(res.calendars.clone());
+            let mut calendars: Vec<String> = Vec::new();
 
-            // Then, acquire the lock to update the events
+            for calendar in &res.calendars {
+                calendars.push(calendar.name.clone());
+            }
+
+            active_calendars.set(calendars);
+
             let mut display_manager = match EventDisplayManager::get_instance().lock() {
                 Ok(manager) => manager,
                 Err(_) => {

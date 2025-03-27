@@ -17,7 +17,7 @@ pub struct Event {
     pub end: Time,
 }
 
-#[derive(Deserialize, Serialize, Default, Debug, Clone)]
+#[derive(Deserialize, Serialize, PartialEq, Default, Debug, Clone)]
 pub struct Calendar {
     pub name: String,
     pub uuid: String,

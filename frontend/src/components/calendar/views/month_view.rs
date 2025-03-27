@@ -4,7 +4,10 @@ use crate::core::{
     calendar_data::{get_todays_date, get_year_data},
     event_manager::EventDisplayManager,
     shared::Event,
+    time::format_time,
 };
+
+use crate::components::modal::{modal_container::ModalContainer, modals::edit_event::EditEvent};
 
 #[derive(Properties, PartialEq)]
 struct DayParams {
@@ -15,14 +18,15 @@ struct DayParams {
     today: bool,
     show_right_edge: bool,
     show_bottom_edge: bool,
-    // needed when modals are implemented: modal: String,
+    modal: UseStateHandle<String>,
 }
 
 #[derive(Properties, PartialEq)]
 pub struct MonthViewParams {
     pub month: UseStateHandle<i32>,
     pub year: UseStateHandle<i32>,
-    // needed when modals are implemented: pub modal: UseStateHandle<String>,
+    pub modal: UseStateHandle<String>,
+    pub active_calendars: UseStateHandle<Vec<String>>,
 }
 
 #[function_component]
@@ -39,21 +43,45 @@ fn Day(props: &DayParams) -> Html {
         "".to_string()
     };
 
+    let modal = props.modal.clone();
+    let day = props.day;
+    let day_key = props.day_key.clone();
+    let events = props.events.clone();
+
     return html! {
         <div class={
             format!("flex flex-col border-2 border-transparent {} {}",
                 if props.show_right_edge {"border-r-gray-800"} else {""},
                 if props.show_bottom_edge {"border-b-gray-800"} else {""})
         }>
-            <a class={format!("text-xl {} px-2 py-1 m-1", style)}>{props.day}</a>
+            <a class={format!("text-xl {} px-2 py-1 m-1", style)}>{ day }</a>
             <div class="flex flex-col w-full overflow-auto">
             {
-                props.events.iter().map(|event| html! {
-                    <div class="flex justify-between px-2 pb-1">
-                        <a>{event.name.clone()}</a>
-                        <a>{format!("{}:{}", event.start.hour, format!("{:0>2}", event.start.minute))}</a>
-                        // modal stuff goes here
-                    </div>
+                events.into_iter().map(move |event| {
+                    let day_key = day_key.clone();
+                    let modal = modal.clone();
+                    let day_key_2 = day_key.clone();
+                    let modal_2 = modal.clone();
+                    html! {
+                        <div
+                            onclick={move |_| modal_2.set(day_key_2.clone())}
+                            class="flex justify-between px-2 pb-1">
+                            <a>{ event.name.clone() }</a>
+                            <a>{ format_time(event.start.hour as i32, event.start.minute as i32) }</a>
+                            {
+                                if *modal == day_key {
+                                    html! {
+                                        <ModalContainer
+                                            title={event.name.clone()}
+                                            component={html! {<EditEvent event={event.clone()} day_key={day_key.clone()} />}}
+                                            modal={modal.clone()} />
+                                    }
+                                } else {
+                                    html! {}
+                                }
+                            }
+                        </div>
+                    }
                 }).collect::<Html>()
             }
             </div>
@@ -67,18 +95,18 @@ pub fn MonthView(props: &MonthViewParams) -> Html {
     let display_manager = match EventDisplayManager::get_instance().lock() {
         Ok(manager) => manager,
         Err(_) => {
-            return html! { <div>{"Error loading calendar, could not get display manager."}</div> };
+            return html! { <div>{"Error loading calendar(s), could not get display manager."}</div> };
         }
     };
 
     let current_month = get_year_data(*props.year)[*props.month as usize].clone();
+    let (todays_month, todays_year, todays_day) = get_todays_date();
+
     let previous_month = if *props.month == 0 {
         get_year_data(*props.year - 1)[11].clone()
     } else {
         get_year_data(*props.year)[*props.month as usize - 1].clone()
     };
-
-    let (todays_month, todays_year, todays_day) = get_todays_date();
 
     let rows = if current_month.week_index + current_month.days_in_month > 7 * 5 {
         "grid-rows-6"
@@ -92,79 +120,149 @@ pub fn MonthView(props: &MonthViewParams) -> Html {
         7 * 5
     };
 
-    for i in (0..current_month.week_index).rev() {
-        let is_today = todays_month == *props.month - (1_i32)
-            && todays_year == *props.year
-            && previous_month.days_in_month - i + 1 == todays_day;
+    let current_month = get_year_data(*props.year)[*props.month as usize].clone();
 
-        let day_key = if *props.month == 0 {
-            format!(
-                "default-{}-{}-{}",
-                *props.year - 1,
-                11,
-                previous_month.days_in_month - i + 1
-            )
+    for i in (0..current_month.week_index).rev() {
+        let is_today = if *props.month == 0 {
+            todays_month == 11
+                && todays_year == *props.year - 1
+                && previous_month.days_in_month - i + 1 == todays_day
         } else {
-            format!(
-                "default-{}-{}-{}",
-                *props.year,
-                *props.month - 1,
-                previous_month.days_in_month - i + 1
-            )
+            todays_month == *props.month - 1
+                && todays_year == *props.year
+                && previous_month.days_in_month - i + 1 == todays_day
         };
 
-        day_components.push(html! {<Day
-            day_key={day_key.clone()}
-            events={display_manager.get_events_by_key(&day_key).clone()}
-            day={previous_month.days_in_month - i}
-            active={false}
-            today={is_today}
-            show_right_edge={true}
-            show_bottom_edge={true}
-        />});
+        for calendar in props.active_calendars.clone().iter() {
+            let day_key = if *props.month == 0 {
+                format!(
+                    "{}-{}-{}-{}",
+                    calendar,
+                    *props.year - 1,
+                    11,
+                    previous_month.days_in_month - i + 1
+                )
+            } else {
+                format!(
+                    "{}-{}-{}-{}",
+                    calendar,
+                    *props.year,
+                    *props.month - 1,
+                    previous_month.days_in_month - i + 1
+                )
+            };
+
+            day_components.push(html! {<Day
+                day_key={day_key.clone()}
+                events={display_manager.get_events_by_key(&day_key).clone()}
+                day={previous_month.days_in_month - i}
+                active={false}
+                today={is_today}
+                show_right_edge={true}
+                show_bottom_edge={true}
+                modal={props.modal.clone()}
+            />});
+        }
+
+        if props.active_calendars.len() == 0 {
+            day_components.push(html! {<Day
+                day_key={"".to_string()}
+                events={vec![]}
+                day={previous_month.days_in_month - i}
+                active={false}
+                today={is_today}
+                show_right_edge={true}
+                show_bottom_edge={true}
+                modal={props.modal.clone()}
+            />});
+        }
     }
 
     for i in 0..current_month.days_in_month {
         let is_today =
             todays_month == *props.month && todays_year == *props.year && i + 1 == todays_day;
 
-        let day_key = format!("default-{}-{}-{}", *props.year, *props.month, i);
-
         let show_right_edge = (current_month.week_index + i + 1) % 7 != 0;
         let show_bottom_edge = current_month.week_index + i < days - 7;
 
-        day_components.push(html! {<Day
-            day_key={day_key.clone()}
-            events={display_manager.get_events_by_key(&day_key).clone()}
-            day={i + 1}
-            active={true}
-            today={is_today}
-            show_right_edge={show_right_edge}
-            show_bottom_edge={show_bottom_edge}
-        />});
+        for calendar in props.active_calendars.clone().iter() {
+            let day_key = format!("{}-{}-{}-{}", calendar, *props.year, *props.month, i);
+
+            day_components.push(html! {<Day
+                day_key={day_key.clone()}
+                events={display_manager.get_events_by_key(&day_key).clone()}
+                day={i + 1}
+                active={true}
+                today={is_today}
+                show_right_edge={show_right_edge}
+                show_bottom_edge={show_bottom_edge}
+                modal={props.modal.clone()}
+            />});
+        }
+
+        if props.active_calendars.len() == 0 {
+            day_components.push(html! {<Day
+                day_key={"".to_string()}
+                events={vec![]}
+                day={i + 1}
+                active={true}
+                today={is_today}
+                show_right_edge={show_right_edge}
+                show_bottom_edge={show_bottom_edge}
+                modal={props.modal.clone()}
+            />});
+        }
     }
 
     for i in 0..(days - current_month.week_index - current_month.days_in_month) {
-        let is_today = todays_month == *props.month + (1_i32)
-            && todays_year == *props.year
-            && i + 1 == todays_day;
-
-        let day_key = format!("default-{}-{}-{}", *props.year, *props.month + 1, i);
+        let is_today = if *props.month == 11 {
+            todays_month == 0 && todays_year == *props.year + 1 && i + 1 == todays_day
+        } else {
+            todays_month == *props.month + 1 && todays_year == *props.year && i + 1 == todays_day
+        };
 
         let show_right_edge =
             (current_month.week_index + current_month.days_in_month + i + 1) % 7 != 0;
         let show_bottom_edge =
             current_month.week_index + current_month.days_in_month + i < days - 7;
 
-        day_components.push(html! {<Day
-            day_key={day_key.clone()}
-            events={display_manager.get_events_by_key(&day_key).clone()}
-            day={i + 1}
-            active={false}
-            today={is_today}
-            show_right_edge={show_right_edge}
-            show_bottom_edge={show_bottom_edge}
-        />});
+        for calendar in props.active_calendars.clone().iter() {
+            let day_key = if *props.month == 11 {
+                format!("{}-{}-{}-{}", calendar, *props.year + 1, 0, i + 1)
+            } else {
+                format!(
+                    "{}-{}-{}-{}",
+                    calendar,
+                    *props.year,
+                    *props.month + 1,
+                    i + 1
+                )
+            };
+
+            day_components.push(html! {<Day
+                day_key={day_key.clone()}
+                events={display_manager.get_events_by_key(&day_key).clone()}
+                day={i + 1}
+                active={false}
+                today={is_today}
+                show_right_edge={show_right_edge}
+                show_bottom_edge={show_bottom_edge}
+                modal={props.modal.clone()}
+            />});
+        }
+
+        if props.active_calendars.len() == 0 {
+            day_components.push(html! {<Day
+                day_key={"".to_string()}
+                events={vec![]}
+                day={i + 1}
+                active={false}
+                today={is_today}
+                show_right_edge={show_right_edge}
+                show_bottom_edge={show_bottom_edge}
+                modal={props.modal.clone()}
+            />});
+        }
     }
 
     return html! {
