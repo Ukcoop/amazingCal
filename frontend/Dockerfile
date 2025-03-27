@@ -1,24 +1,13 @@
-FROM node:lts-alpine AS build
+FROM rust:1.83
+
+RUN rustup target add wasm32-unknown-unknown
+
+# Install trunk (locked for reproducibility)
+RUN cargo install trunk --locked
 
 WORKDIR /app
-
 COPY . .
-
-RUN npm install 
-
-ENV NODE_ENV=production
-
-RUN npm run build
-
-FROM node:lts-alpine AS runner
-
-WORKDIR /app
-
-COPY --from=build /app/package.json /app/package-lock.json ./
-COPY --from=build /app/.next ./.next
-COPY --from=build /app/public ./public
-COPY --from=build /app/node_modules ./node_modules
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+CMD ["trunk", "serve", "--address", "0.0.0.0", "--port", "3000"]
