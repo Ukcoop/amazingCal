@@ -32,9 +32,9 @@ pub fn InputField<T: PartialEq + Display + FromStr + 'static>(props: &InputField
     };
 
     html! {
-        <div class="w-full mb-2">
+        <div class="w-full">
             <input
-                class="w-full h-10 pl-2 text-2xl dark:text-white dark:bg-gray-950 border-2 border-gray-500 rounded-md outline-none focus:border-black focus:dark:border-white"
+                class="w-full border border-black dark:border-gray-600 rounded-md p-1"
                 type={props.varient.clone()}
                 value={props.value.to_string()}
                 oninput={on_change}

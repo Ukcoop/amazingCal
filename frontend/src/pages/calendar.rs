@@ -9,6 +9,7 @@ use yew::{
 use yew_router::hooks::use_navigator;
 
 use crate::core::{
+    calendar_data::get_todays_date,
     page_functions::calendar::{get_current_session, get_user_data},
     shared::Calendar,
     time::get_month_name,
@@ -55,8 +56,10 @@ pub fn CalendarPage() -> Html {
     let email = use_state(|| "".to_string());
     let modal = use_state(|| "None".to_string());
 
-    let month: UseStateHandle<i32> = use_state(|| 2);
-    let year: UseStateHandle<i32> = use_state(|| 2025);
+    let (today_month, today_year, _) = get_todays_date();
+
+    let month: UseStateHandle<i32> = use_state(|| today_month);
+    let year: UseStateHandle<i32> = use_state(|| today_year);
 
     let navigator_clone = navigator.clone();
     let calendars_clone = calendars.clone();

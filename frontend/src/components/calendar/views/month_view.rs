@@ -126,11 +126,11 @@ pub fn MonthView(props: &MonthViewParams) -> Html {
         let is_today = if *props.month == 0 {
             todays_month == 11
                 && todays_year == *props.year - 1
-                && previous_month.days_in_month - i + 1 == todays_day
+                && previous_month.days_in_month - i == todays_day
         } else {
             todays_month == *props.month - 1
                 && todays_year == *props.year
-                && previous_month.days_in_month - i + 1 == todays_day
+                && previous_month.days_in_month - i == todays_day
         };
 
         for calendar in props.active_calendars.clone().iter() {
@@ -140,7 +140,7 @@ pub fn MonthView(props: &MonthViewParams) -> Html {
                     calendar,
                     *props.year - 1,
                     11,
-                    previous_month.days_in_month - i + 1
+                    previous_month.days_in_month - i - 1
                 )
             } else {
                 format!(
@@ -148,7 +148,7 @@ pub fn MonthView(props: &MonthViewParams) -> Html {
                     calendar,
                     *props.year,
                     *props.month - 1,
-                    previous_month.days_in_month - i + 1
+                    previous_month.days_in_month - i - 1
                 )
             };
 

@@ -114,12 +114,8 @@ pub fn position_menu(
             .and_then(|v| v.as_f64())
             .unwrap_or(0.0);
 
-        let mut new_top = button_rect.bottom();
+        let mut new_top = button_rect.height() + 10.0;
         let mut new_left = button_rect.left();
-
-        if button_rect.bottom() + dropdown_rect.height() > viewport_height {
-            new_top = button_rect.top() - dropdown_rect.height();
-        }
 
         let parent_left = match button.parent_element() {
             Some(p) => match get_bounding_client_rect(&p) {
@@ -135,7 +131,7 @@ pub fn position_menu(
             new_left = viewport_width - dropdown_rect.width();
         }
 
-        dropdown_style.set((new_top - 10.0, new_left));
+        dropdown_style.set((new_top, new_left));
     })
     .forget();
 

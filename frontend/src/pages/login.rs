@@ -136,13 +136,13 @@ pub fn Login() -> Html {
 
     html! {
         <div class="flex flex-col p-5 h-screen max-h-screen items-center justify-center bg-white dark:bg-gray-950">
-            <div class="flex flex-col max-w-xs">
+            <div class="flex flex-col max-w-96">
                 <label class="text-2xl pb-1">{"Email"}</label>
                 <InputField<String> varient="email" value={email.clone()} />
                 <label class="text-2xl pb-1">{"Password"}</label>
                 <InputField<String> varient="password" value={password.clone()} />
                 <Status status={status.clone()} />
-                <div class="flex flex-col">
+                <div class="flex flex-col mt-2">
                     <Button style={ButtonStyle::Primary} width="w-full" on_click={handle_login}>{"Log in"}</Button>
                     <Button style={ButtonStyle::Primary} width="w-full" on_click={handle_signup}>{"Sign up"}</Button>
                 </div>
