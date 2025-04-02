@@ -67,6 +67,7 @@ pub fn CalendarPage() -> Html {
 
     let token_clone_a = token.clone();
     let token_clone_b = token.clone();
+    let token_clone_c = token.clone();
 
     let month_clone_a = month.clone();
     let month_clone_b = month.clone();
@@ -201,7 +202,7 @@ pub fn CalendarPage() -> Html {
                         }
                     } else {html! {}}}
                 </div>
-                <CalendarView view={view.clone()} month={month.clone()} year={year.clone()} modal={modal.clone()} active_calendars={active_calendars_clone}/>
+                <CalendarView view={view.clone()} month={month.clone()} year={year.clone()} modal={modal.clone()} active_calendars={active_calendars_clone} token={token_clone_c.to_string()}/>
             </div>
             {if modal.as_str() == "Create Calendar" {html!{<ModalContainer title="Create Calendar" component={html!{<CreateCalendar/>}} modal={modal.clone()}/>}} else {html!{}}}
             {if modal.as_str() == "Create Event" {html!{<ModalContainer title="Create Event" component={html!{<CreateEvent/>}} modal={modal.clone()}/>}} else {html!{}}}

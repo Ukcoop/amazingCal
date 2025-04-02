@@ -108,13 +108,8 @@ pub fn position_menu(
             .ok()
             .and_then(|v| v.as_f64())
             .unwrap_or(0.0);
-        let viewport_height = window
-            .inner_height()
-            .ok()
-            .and_then(|v| v.as_f64())
-            .unwrap_or(0.0);
 
-        let mut new_top = button_rect.height() + 10.0;
+        let new_top = button_rect.height() + 10.0;
         let mut new_left = button_rect.left();
 
         let parent_left = match button.parent_element() {

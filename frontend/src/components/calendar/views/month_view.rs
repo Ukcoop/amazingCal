@@ -19,6 +19,7 @@ struct DayParams {
     show_right_edge: bool,
     show_bottom_edge: bool,
     modal: UseStateHandle<String>,
+    token: String,
 }
 
 #[derive(Properties, PartialEq)]
@@ -27,6 +28,7 @@ pub struct MonthViewParams {
     pub year: UseStateHandle<i32>,
     pub modal: UseStateHandle<String>,
     pub active_calendars: UseStateHandle<Vec<String>>,
+    pub token: String,
 }
 
 #[function_component]
@@ -73,7 +75,7 @@ fn Day(props: &DayParams) -> Html {
                                     html! {
                                         <ModalContainer
                                             title={event.name.clone()}
-                                            component={html! {<EditEvent event={event.clone()} day_key={day_key.clone()} />}}
+                                            component={html! {<EditEvent event={event.clone()} day_key={day_key.clone()} token={props.token.clone()} modal={modal.clone()} />}}
                                             modal={modal.clone()} />
                                     }
                                 } else {
@@ -161,6 +163,7 @@ pub fn MonthView(props: &MonthViewParams) -> Html {
                 show_right_edge={true}
                 show_bottom_edge={true}
                 modal={props.modal.clone()}
+                token={props.token.clone()}
             />});
         }
 
@@ -174,6 +177,7 @@ pub fn MonthView(props: &MonthViewParams) -> Html {
                 show_right_edge={true}
                 show_bottom_edge={true}
                 modal={props.modal.clone()}
+                token={props.token.clone()}
             />});
         }
     }
@@ -197,6 +201,7 @@ pub fn MonthView(props: &MonthViewParams) -> Html {
                 show_right_edge={show_right_edge}
                 show_bottom_edge={show_bottom_edge}
                 modal={props.modal.clone()}
+                token={props.token.clone()}
             />});
         }
 
@@ -210,6 +215,7 @@ pub fn MonthView(props: &MonthViewParams) -> Html {
                 show_right_edge={show_right_edge}
                 show_bottom_edge={show_bottom_edge}
                 modal={props.modal.clone()}
+                token={props.token.clone()}
             />});
         }
     }
@@ -248,6 +254,7 @@ pub fn MonthView(props: &MonthViewParams) -> Html {
                 show_right_edge={show_right_edge}
                 show_bottom_edge={show_bottom_edge}
                 modal={props.modal.clone()}
+                token={props.token.clone()}
             />});
         }
 
@@ -261,6 +268,7 @@ pub fn MonthView(props: &MonthViewParams) -> Html {
                 show_right_edge={show_right_edge}
                 show_bottom_edge={show_bottom_edge}
                 modal={props.modal.clone()}
+                token={props.token.clone()}
             />});
         }
     }

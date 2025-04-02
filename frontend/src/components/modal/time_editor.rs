@@ -31,7 +31,7 @@ pub struct TimeEditorParams {
 pub fn TimeEditor(props: &TimeEditorParams) -> Html {
     let event = props.event.clone();
 
-    let day_options = use_state(|| vec![]);
+    let day_options = use_state(Vec::new);
     let mut month_options = vec![];
     let mut year_options = vec![];
     let mut hour_options = vec![];
@@ -50,7 +50,7 @@ pub fn TimeEditor(props: &TimeEditorParams) -> Html {
 
         day_options_clone.set(new_day_options);
 
-        if *states.day.clone() >= year_data[*states.month.clone() as usize].days_in_month as u8 {
+        if *states.day >= year_data[*states.month.clone() as usize].days_in_month as u8 {
             states
                 .day
                 .set(year_data[*states.month.clone() as usize].days_in_month as u8 - 1);
@@ -84,7 +84,7 @@ pub fn TimeEditor(props: &TimeEditorParams) -> Html {
     let handle_edit = move |id: String, index: usize| match id.as_str() {
         "edit-day" => day.set(index as u8),
         "edit-month" => month.set(index as u8),
-        "edit-year" => year.set((event.start.year + index as u16) as u16),
+        "edit-year" => year.set(event.start.year + index as u16),
         "edit-hour" => hour.set(index as u8),
         "edit-minute" => minute.set(index as u8),
         "edit-ampm" => ampm.set(index as u8),
@@ -95,7 +95,6 @@ pub fn TimeEditor(props: &TimeEditorParams) -> Html {
     let handle_edit_clone_b = handle_edit.clone();
     let handle_edit_clone_c = handle_edit.clone();
     let handle_edit_clone_d = handle_edit.clone();
-    let handle_edit_clone_e = handle_edit.clone();
 
     return html! {
         <div class="flex justify-between mt-2">
@@ -149,7 +148,7 @@ pub fn TimeEditor(props: &TimeEditorParams) -> Html {
                         html!{ <a>{ "am" }</a> },
                         html!{ <a>{ "pm" }</a> }
                     ] }
-                    return_index={ move |index: usize| { handle_edit_clone_e("edit-ampm".to_string(), index) } }
+                    return_index={ move |index: usize| { handle_edit("edit-ampm".to_string(), index) } }
                 />
             </div>
         </div>
