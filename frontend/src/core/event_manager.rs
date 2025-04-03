@@ -13,6 +13,7 @@ lazy_static! {
     //static ref EVENT_MANAGER: Mutex<EventManager> = Mutex::new(EventManager::new());
 }
 
+#[derive(PartialEq, Clone)]
 pub struct EventDisplayManager {
     events: EventsObject,
 }

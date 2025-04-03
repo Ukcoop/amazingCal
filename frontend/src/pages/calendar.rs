@@ -10,7 +10,7 @@ use yew_router::hooks::use_navigator;
 
 use crate::core::{
     calendar_data::get_todays_date,
-    page_functions::calendar::{get_current_session, get_user_data},
+    page_functions::calendar::{get_current_session, get_user_data, ActiveCalendar},
     shared::Calendar,
     time::get_month_name,
 };
@@ -48,7 +48,7 @@ pub fn CalendarPage() -> Html {
 
     let token = use_state(|| "".to_string());
     let calendars: UseStateHandle<Vec<Calendar>> = use_state(Vec::new);
-    let active_calendars: UseStateHandle<Vec<String>> = use_state(Vec::new);
+    let active_calendars: UseStateHandle<Vec<ActiveCalendar>> = use_state(Vec::new);
 
     let menu = use_state(|| false);
     let open = use_state(|| "None".to_string());
@@ -79,6 +79,25 @@ pub fn CalendarPage() -> Html {
     let email_clone = email.clone();
 
     use_effect_with((), move |_| get_current_session(navigator, token_clone_a));
+
+    let refresh_data = {
+        let calendars = calendars.clone();
+        let active_calendars = active_calendars.clone();
+        let navigator_clone = navigator_clone.clone();
+        let token_clone_b = token_clone_b.clone();
+
+        move |_| {
+            get_user_data(
+                calendars.clone(),
+                active_calendars.clone(),
+                navigator_clone.clone(),
+                token_clone_b.clone(),
+            );
+        }
+    };
+
+    let refresh_data_callback = Callback::from(refresh_data);
+
     use_effect_with(token, move |_| {
         get_user_data(calendars, active_calendars, navigator_clone, token_clone_b)
     });
@@ -193,19 +212,21 @@ pub fn CalendarPage() -> Html {
                                         <a onclick={add_calendar}><MaterialSymbol name="add"/></a>
                                     </div>
                                 </div>
+                                <div class="flex flex-col">
                                 {
                                     calendars_clone.iter().map(|calendar| html! {
                                        <a>{&*calendar.name}</a>
                                     }).collect::<Html>()
                                 }
+                                </div>
                             </div>
                         }
                     } else {html! {}}}
                 </div>
-                <CalendarView view={view.clone()} month={month.clone()} year={year.clone()} modal={modal.clone()} active_calendars={active_calendars_clone} token={token_clone_c.to_string()}/>
+                <CalendarView view={view.clone()} month={month.clone()} year={year.clone()} modal={modal.clone()} active_calendars={active_calendars_clone.clone()} token={token_clone_c.to_string()} refresh_data={refresh_data_callback.clone()}/>
             </div>
-            {if modal.as_str() == "Create Calendar" {html!{<ModalContainer title="Create Calendar" component={html!{<CreateCalendar/>}} modal={modal.clone()}/>}} else {html!{}}}
-            {if modal.as_str() == "Create Event" {html!{<ModalContainer title="Create Event" component={html!{<CreateEvent/>}} modal={modal.clone()}/>}} else {html!{}}}
+            {if modal.as_str() == "Create Calendar" {html!{<ModalContainer title="Create Calendar" component={html!{<CreateCalendar token={token_clone_c.to_string()} modal={modal.clone()} refresh_data={refresh_data_callback.clone()}/>}} modal={modal.clone()}/>}} else {html!{}}}
+            {if modal.as_str() == "Create Event" {html!{<ModalContainer title="Create Event" component={html!{<CreateEvent token={token_clone_c.to_string()} active_calendars={active_calendars_clone} modal={modal.clone()} refresh_data={refresh_data_callback.clone()}/>}} modal={modal.clone()}/>}} else {html!{}}}
         </div>
     }
 }

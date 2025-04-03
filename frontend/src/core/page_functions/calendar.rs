@@ -1,15 +1,28 @@
+use serde::Serialize;
 use wasm_bindgen::prelude::{wasm_bindgen, JsValue};
 use wasm_bindgen_futures::spawn_local;
 use yew::UseStateHandle;
 use yew_router::prelude::Navigator;
 
 use crate::core::{
+    api::post,
     event_manager::EventDisplayManager,
     shared::{Calendar, UserData},
 };
 use crate::Route;
 
 use crate::core::api::get;
+
+#[derive(PartialEq)]
+pub struct ActiveCalendar {
+    pub name: String,
+    pub uuid: String,
+}
+
+#[derive(Serialize)]
+struct CreateCalendarInput {
+    name: String,
+}
 
 #[wasm_bindgen(module = "/src/js/auth_handler.js")]
 extern "C" {
@@ -32,7 +45,7 @@ pub fn get_current_session(navigator: Option<Navigator>, token: UseStateHandle<S
 
 pub fn get_user_data(
     calendars: UseStateHandle<Vec<Calendar>>,
-    active_calendars: UseStateHandle<Vec<String>>,
+    active_calendars: UseStateHandle<Vec<ActiveCalendar>>,
     navigator: Option<Navigator>,
     token: UseStateHandle<String>,
 ) {
@@ -45,10 +58,13 @@ pub fn get_user_data(
 
         if code == 200 {
             calendars.set(res.calendars.clone());
-            let mut calendars: Vec<String> = Vec::new();
+            let mut calendars: Vec<ActiveCalendar> = Vec::new();
 
             for calendar in &res.calendars {
-                calendars.push(calendar.name.clone());
+                calendars.push(ActiveCalendar {
+                    name: calendar.name.clone(),
+                    uuid: calendar.uuid.clone(),
+                });
             }
 
             active_calendars.set(calendars);
@@ -78,4 +94,15 @@ pub fn get_user_data(
             )));
         }
     });
+}
+
+pub async fn create_calendar(name: String, token: String) -> u16 {
+    let input = CreateCalendarInput { name };
+
+    return post::<CreateCalendarInput>(
+        "http://localhost:3080/api/create/calendar",
+        &token,
+        &input,
+    )
+    .await;
 }
