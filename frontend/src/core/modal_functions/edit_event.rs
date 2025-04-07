@@ -1,6 +1,8 @@
 use serde::Serialize;
-use yew::{hook, use_state};
+use wasm_bindgen_futures::spawn_local;
+use yew::{hook, use_state, Callback, UseStateHandle};
 
+use crate::components::main::status::{StatusCode, StatusObject};
 use crate::components::modal::time_editor::States;
 
 use crate::core::{
@@ -106,4 +108,74 @@ pub async fn delete_event(uuid: String, token: String) -> u16 {
         &delete_event,
     )
     .await;
+}
+
+pub fn handle_submit(
+    name: String,
+    uuid: String,
+    start_states: States,
+    end_states: States,
+    token: String,
+    status: UseStateHandle<StatusObject>,
+    modal: UseStateHandle<String>,
+    refresh_data: Callback<()>,
+) {
+    status.set(StatusObject {
+        code: StatusCode::Loading,
+        data: "Editing event...".to_string(),
+    });
+
+    spawn_local(async move {
+        let code = edit_event(name, uuid, start_states.clone(), end_states.clone(), token).await;
+
+        if code == 200 {
+            status.set(StatusObject {
+                code: StatusCode::Success,
+                data: "Event edited successfully".to_string(),
+            });
+
+            modal.set("None".to_string());
+            refresh_data.emit(());
+        } else {
+            status.set(StatusObject {
+                code: StatusCode::Error,
+                data: format!("Error editing event: {}", code),
+            });
+        }
+    });
+}
+
+pub fn handle_delete(
+    uuid: String,
+    token: String,
+    status: UseStateHandle<StatusObject>,
+    modal: UseStateHandle<String>,
+    open: UseStateHandle<String>,
+    refresh_data: Callback<()>,
+) {
+    status.set(StatusObject {
+        code: StatusCode::Loading,
+        data: "Editing event...".to_string(),
+    });
+
+    spawn_local(async move {
+        let code = delete_event(uuid.to_string(), token.to_string()).await;
+
+        if code == 200 {
+            status.set(StatusObject {
+                code: StatusCode::Success,
+                data: "Event edited successfully".to_string(),
+            });
+
+            modal.set("None".to_string());
+            refresh_data.emit(());
+        } else {
+            status.set(StatusObject {
+                code: StatusCode::Error,
+                data: format!("Error editing event: {}", code),
+            });
+        }
+    });
+
+    open.set("None".to_string());
 }

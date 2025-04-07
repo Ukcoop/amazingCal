@@ -1,11 +1,9 @@
-use serde::Serialize;
 use wasm_bindgen::prelude::{wasm_bindgen, JsValue};
 use wasm_bindgen_futures::spawn_local;
 use yew::UseStateHandle;
 use yew_router::prelude::Navigator;
 
 use crate::core::{
-    api::post,
     event_manager::EventDisplayManager,
     shared::{Calendar, UserData},
 };
@@ -17,11 +15,6 @@ use crate::core::api::get;
 pub struct ActiveCalendar {
     pub name: String,
     pub uuid: String,
-}
-
-#[derive(Serialize)]
-struct CreateCalendarInput {
-    name: String,
 }
 
 #[wasm_bindgen(module = "/src/js/auth_handler.js")]
@@ -94,15 +87,4 @@ pub fn get_user_data(
             )));
         }
     });
-}
-
-pub async fn create_calendar(name: String, token: String) -> u16 {
-    let input = CreateCalendarInput { name };
-
-    return post::<CreateCalendarInput>(
-        "http://localhost:3080/api/create/calendar",
-        &token,
-        &input,
-    )
-    .await;
 }

@@ -1,26 +1,21 @@
-use chrono::{Local, Timelike};
-use wasm_bindgen_futures::spawn_local;
-
 use yew::{function_component, html, use_state, Callback, Html, Properties, UseStateHandle};
 
-use crate::{
-    components::{
-        main::{
-            button::{Button, ButtonStyle},
-            dropdown::DropDown,
-            input_field::InputField,
-            status::{Status, StatusCode, StatusObject},
-        },
-        modal::time_editor::TimeEditor,
+use crate::components::{
+    main::{
+        button::{Button, ButtonStyle},
+        dropdown::DropDown,
+        input_field::InputField,
+        status::{Status, StatusCode, StatusObject},
     },
-    core::{
-        calendar_data::get_todays_date,
-        page_functions::{
-            calendar::ActiveCalendar,
-            event::{create_event, use_get_states},
-        },
-        shared::{Event, Time},
+    modal::time_editor::TimeEditor,
+};
+
+use crate::core::{
+    modal_functions::{
+        create_event::{get_calendar_options, handle_calendar_change, handle_submit, new_event},
+        edit_event::use_get_states,
     },
+    page_functions::calendar::ActiveCalendar,
 };
 
 #[derive(Properties, PartialEq)]
@@ -33,41 +28,14 @@ pub struct CreateEventParams {
 
 #[function_component]
 pub fn CreateEvent(props: &CreateEventParams) -> Html {
-    let (todays_month, todays_year, todays_day) = get_todays_date();
-
-    let now = Local::now();
-    let hour = now.hour();
-
-    let event = Event {
-        name: "Event".to_string(),
-        uuid: "".to_string(),
-        start: Time {
-            year: todays_year as u16,
-            month: todays_month as u8,
-            day: (todays_day - 1) as u8,
-            hour: hour as u8,
-            minute: 0,
-        },
-        end: Time {
-            year: todays_year as u16,
-            month: todays_month as u8,
-            day: (todays_day - 1) as u8,
-            hour: (hour + 1) as u8,
-            minute: 0,
-        },
-    };
+    let event = new_event();
 
     let open = use_state(|| "None".to_string());
     let open_dropdown = use_state(|| "None".to_string());
 
     let active_calendar = props.active_calendars.clone();
     let active_calendar_index: UseStateHandle<usize> = use_state(|| 0);
-
-    let mut active_calendar_options: Vec<Html> = vec![];
-
-    for calendar in props.active_calendars.clone().iter() {
-        active_calendar_options.push(html! {calendar.name.clone()});
-    }
+    let active_calendar_options: Vec<Html> = get_calendar_options(props.active_calendars.clone());
 
     let status = use_state(|| StatusObject {
         code: StatusCode::Ok,
@@ -80,67 +48,11 @@ pub fn CreateEvent(props: &CreateEventParams) -> Html {
     let end_states = use_get_states(event.end.clone());
 
     let token = props.token.clone();
-    let status_clone = status.clone();
 
-    let name_clone = name.clone();
     let modal = props.modal.clone();
     let calendar_id = props.active_calendars[0].uuid.clone();
-
-    let start_states_clone = start_states.clone();
-    let end_states_clone = end_states.clone();
     let refresh_data = props.refresh_data.clone();
-
-    let handle_submit = move |_| {
-        let name_clone = name_clone.clone();
-        let calendar_id = calendar_id.clone();
-        let modal = modal.clone();
-        let refresh_data = refresh_data.clone();
-
-        let start_states_clone = start_states_clone.clone();
-        let end_states_clone = end_states_clone.clone();
-
-        let token_clone = token.clone();
-        let status_clone = status_clone.clone();
-
-        status_clone.set(StatusObject {
-            code: StatusCode::Loading,
-            data: "Editing event...".to_string(),
-        });
-
-        spawn_local(async move {
-            let code = create_event(
-                name_clone.to_string(),
-                start_states_clone.clone(),
-                end_states_clone.clone(),
-                calendar_id.clone(),
-                token_clone.to_string(),
-            )
-            .await;
-
-            if code == 200 {
-                status_clone.set(StatusObject {
-                    code: StatusCode::Ok,
-                    data: "Event edited successfully".to_string(),
-                });
-
-                modal.set("None".to_string());
-                refresh_data.emit(());
-            } else {
-                status_clone.set(StatusObject {
-                    code: StatusCode::Error,
-                    data: format!("Error editing event: {}", code),
-                });
-            }
-        });
-    };
-
-    let active_calendar_index_clone = active_calendar_index.clone();
-    let open_dropdown_clone = open_dropdown.clone();
-
-    let handle_calendar_change = move |index: usize| {
-        active_calendar_index_clone.set(index);
-        open_dropdown_clone.set("None".to_string());
-    };
+    let status_clone = status.clone();
 
     html! {
         <div class="w-96 pt-1">
@@ -152,7 +64,9 @@ pub fn CreateEvent(props: &CreateEventParams) -> Html {
                     minimal={ false }
                     element={ html! { <a>{active_calendar[*active_calendar_index.clone()].name.clone()}</a> }}
                     options={active_calendar_options.clone()}
-                    return_index={handle_calendar_change}
+                    return_index={move |index: usize| {
+                        handle_calendar_change(index, active_calendar_index.clone(), open_dropdown.clone())
+                    }}
                 />
             </div>
             <div class="flex justify-between items-center">
@@ -161,10 +75,31 @@ pub fn CreateEvent(props: &CreateEventParams) -> Html {
                     <InputField<String> varient="text" value={ name.clone() } />
                 </div>
             </div>
-            <TimeEditor id="Start" event={ event.clone() } open={ open.clone() } states={ start_states.clone() } />
-            <TimeEditor id="End" event={ event.clone() } open={ open.clone() } states={ end_states.clone() } />
+            <TimeEditor
+                id="Start"
+                event={ event.clone() }
+                open={ open.clone() }
+                states={ start_states.clone() }
+            />
+            <TimeEditor
+                id="End"
+                event={ event.clone() }
+                open={ open.clone() }
+                states={ end_states.clone() }
+            />
             <div class="h-0 border dark:border-gray-600 border-black my-2"></div>
-            <Button style={ ButtonStyle::Primary } width="" on_click={ handle_submit }>{ "Submit" }</Button>
+            <Button style={ ButtonStyle::Primary } width="" on_click={ move |_| {
+                handle_submit(
+                    name.to_string(),
+                    calendar_id.clone(),
+                    modal.clone(),
+                    refresh_data.clone(),
+                    start_states.clone(),
+                    end_states.clone(),
+                    token.clone(),
+                    status_clone.clone(),
+        )
+    } }>{ "Submit" }</Button>
             <Status status={status.clone()} />
         </div>
     }

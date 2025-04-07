@@ -1,8 +1,7 @@
-use wasm_bindgen_futures::spawn_local;
 use yew::{function_component, html, use_state, Callback, Html, Properties, UseStateHandle};
 
 use crate::core::{
-    page_functions::event::{delete_event, edit_event, use_get_states},
+    modal_functions::edit_event::{handle_delete, handle_submit, use_get_states},
     shared::Event,
     time::{format_time, get_month_name, get_ordinal},
 };
@@ -60,106 +59,26 @@ pub fn EditEvent(props: &EditEventParams) -> Html {
     let end_time = format_time(event.end.hour as i32, event.end.minute as i32);
 
     let token = props.token.clone();
-    let token_clone = token.clone();
-    let status_clone = status.clone();
-
-    let name_clone = name.clone();
-    let uuid_clone = event.uuid.clone();
-    let modal = props.modal.clone();
-
-    let start_states_clone = start_states.clone();
-    let end_states_clone = end_states.clone();
-    let refresh_data = props.refresh_data.clone();
-
-    let handle_submit = move |_| {
-        let name_clone = name_clone.clone();
-        let uuid_clone = uuid_clone.clone();
-
-        let start_states_clone = start_states_clone.clone();
-        let end_states_clone = end_states_clone.clone();
-        let refresh_data = refresh_data.clone();
-
-        let token_clone = token.clone();
-        let status_clone = status_clone.clone();
-        let modal = modal.clone();
-
-        status_clone.set(StatusObject {
-            code: StatusCode::Loading,
-            data: "Editing event...".to_string(),
-        });
-
-        spawn_local(async move {
-            let code = edit_event(
-                name_clone.to_string(),
-                uuid_clone.to_string(),
-                start_states_clone.clone(),
-                end_states_clone.clone(),
-                token_clone.to_string(),
-            )
-            .await;
-
-            if code == 200 {
-                status_clone.set(StatusObject {
-                    code: StatusCode::Success,
-                    data: "Event edited successfully".to_string(),
-                });
-
-                modal.set("None".to_string());
-                refresh_data.emit(());
-            } else {
-                status_clone.set(StatusObject {
-                    code: StatusCode::Error,
-                    data: format!("Error editing event: {}", code),
-                });
-            }
-        });
-    };
 
     let open_clone = open.clone();
     let handle_confirm = move |_| {
         open_clone.set("Confirm Action".to_string());
     };
 
-    let open_clone = open.clone();
+    let name_clone = name.clone();
+    let token_clone = token.clone();
+
+    let uuid_clone_a = event.uuid.clone();
+    let uuid_clone_b = event.uuid.clone();
+
     let status_clone = status.clone();
-    let uuid_clone = event.uuid.clone();
-    let modal = props.modal.clone();
+    let open_clone = open.clone();
 
-    let refresh_data = props.refresh_data.clone();
+    let modal_clone_a = props.modal.clone();
+    let modal_clone_b = props.modal.clone();
 
-    let handle_delete = move |_| {
-        let status_clone = status_clone.clone();
-        let uuid_clone = uuid_clone.clone();
-        let token_clone = token_clone.clone();
-        let modal = modal.clone();
-        let refresh_data = refresh_data.clone();
-
-        status_clone.set(StatusObject {
-            code: StatusCode::Loading,
-            data: "Editing event...".to_string(),
-        });
-
-        spawn_local(async move {
-            let code = delete_event(uuid_clone.to_string(), token_clone.to_string()).await;
-
-            if code == 200 {
-                status_clone.set(StatusObject {
-                    code: StatusCode::Success,
-                    data: "Event edited successfully".to_string(),
-                });
-
-                modal.set("None".to_string());
-                refresh_data.emit(());
-            } else {
-                status_clone.set(StatusObject {
-                    code: StatusCode::Error,
-                    data: format!("Error editing event: {}", code),
-                });
-            }
-        });
-
-        open_clone.set("None".to_string());
-    };
+    let refresh_data_a = props.refresh_data.clone();
+    let refresh_data_b = props.refresh_data.clone();
 
     html! {
         <div class="w-96">
@@ -185,10 +104,46 @@ pub fn EditEvent(props: &EditEventParams) -> Html {
                             <TimeEditor id="Start" event={ event.clone() } open={ open.clone() } states={ start_states.clone() } />
                             <TimeEditor id="End" event={ event.clone() } open={ open.clone() } states={ end_states.clone() } />
                             <div class="h-0 border dark:border-gray-600 border-black my-2"></div>
-                            <Button style={ ButtonStyle::Primary } width="" on_click={ handle_submit }>{ "Submit" }</Button>
+                            <Button style={ ButtonStyle::Primary } width="" on_click={ move |_| {
+                                handle_submit(
+                                    name_clone.to_string(),
+                                    uuid_clone_a.to_string(),
+                                    start_states.clone(),
+                                    end_states.clone(),
+                                    token_clone.to_string(),
+                                    status_clone.clone(),
+                                    modal_clone_a.clone(),
+                                    refresh_data_a.clone(),
+                                );
+                            } }>{ "Submit" }</Button>
                             <Button style={ ButtonStyle::Secondary } width="" on_click={ handle_confirm }>{ "Delete" }</Button>
                             <Status status={status.clone()} />
-                            {if *open == "Confirm Action" {html! {<ModalContainer title="Confirm Action" component={ html! { <ConfirmAction text="Are you sure you want to delete this event?" action={ handle_delete } /> } } modal={ open.clone() } />}} else {html!{""}}}
+                            {if *open == "Confirm Action" {
+                                html! {
+                                    <ModalContainer
+                                        title="Confirm Action"
+                                        component={
+                                            html! {
+                                                <ConfirmAction
+                                                    text="Are you sure you want to delete this event?"
+                                                    action={ move |_| {
+                                                        handle_delete(
+                                                            uuid_clone_b.to_string(),
+                                                            token.to_string(),
+                                                            status.clone(),
+                                                            modal_clone_b.clone(),
+                                                            open_clone.clone(),
+                                                            refresh_data_b.clone(),
+                                                        );
+                                                        }
+                                                    }
+                                                />
+                                            }
+                                        }
+                                    modal={
+                                        open.clone()
+                                    }
+                                />}} else {html!{""}}}
                         </div>
                     }
                 } else {

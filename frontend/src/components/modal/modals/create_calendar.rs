@@ -1,14 +1,12 @@
-use wasm_bindgen_futures::spawn_local;
 use yew::{function_component, html, use_state, Callback, Html, Properties, UseStateHandle};
 
-use crate::{
-    components::main::{
-        button::{Button, ButtonStyle},
-        input_field::InputField,
-        status::{StatusCode, StatusObject},
-    },
-    core::page_functions::calendar::create_calendar,
+use crate::components::main::{
+    button::{Button, ButtonStyle},
+    input_field::InputField,
+    status::{StatusCode, StatusObject},
 };
+
+use crate::core::modal_functions::create_calendar::handle_submit;
 
 #[derive(Properties, PartialEq)]
 pub struct CreateCalendarParams {
@@ -26,37 +24,9 @@ pub fn CreateCalendar(props: &CreateCalendarParams) -> Html {
 
     let name = use_state(|| "Calendar".to_string());
 
-    let name_clone = name.clone();
-    let token_clone = props.token.clone();
+    let token = props.token.clone();
     let modal = props.modal.clone();
     let refresh_data = props.refresh_data.clone();
-
-    let handle_submit = move |_| {
-        let name_clone = name_clone.clone();
-        let status_clone = status.clone();
-        let token_clone = token_clone.clone();
-        let modal = modal.clone();
-        let refresh_data = refresh_data.clone();
-
-        spawn_local(async move {
-            let code = create_calendar(name_clone.to_string(), token_clone.to_string()).await;
-
-            if code == 200 {
-                status_clone.set(StatusObject {
-                    code: StatusCode::Ok,
-                    data: "Event edited successfully".to_string(),
-                });
-
-                modal.set("None".to_string());
-                refresh_data.emit(());
-            } else {
-                status_clone.set(StatusObject {
-                    code: StatusCode::Error,
-                    data: format!("Error editing event: {}", code),
-                });
-            }
-        });
-    };
 
     html! {
         <div class="pt-1">
@@ -67,7 +37,9 @@ pub fn CreateCalendar(props: &CreateCalendarParams) -> Html {
                 </div>
             </div>
             <div class="h-0 border dark:border-gray-600 border-black my-2"></div>
-            <Button style={ ButtonStyle::Primary } width="" on_click={ handle_submit }>{ "Submit" }</Button>
+            <Button style={ ButtonStyle::Primary } width="" on_click={ move |_| {
+                handle_submit(name.to_string(), token.clone(), modal.clone(), status.clone(), refresh_data.clone())
+            }}>{ "Submit" }</Button>
         </div>
     }
 }
