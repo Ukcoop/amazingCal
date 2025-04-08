@@ -1,22 +1,17 @@
 use serde::Serialize;
 use wasm_bindgen_futures::spawn_local;
-use yew::{hook, use_state, Callback, UseStateHandle};
+use yew::{hook, use_state, UseStateHandle};
 
-use crate::components::main::status::{StatusCode, StatusObject};
-use crate::components::modal::time_editor::States;
+use crate::components::{
+    main::status::{StatusCode, StatusObject},
+    modal::time_editor::{States, StatesContainer},
+};
 
 use crate::core::{
     api::post,
+    event_manager::EventDisplayManager,
     shared::{Event, Time},
 };
-
-#[derive(Serialize)]
-struct CreateEvent {
-    calendar_id: String,
-    name: String,
-    start: Time,
-    end: Time,
-}
 
 #[derive(Serialize)]
 struct DeleteEvent {
@@ -70,35 +65,6 @@ pub async fn edit_event(
     return post::<Event>("http://localhost:3080/api/update/event", &token, &new_event).await;
 }
 
-pub async fn create_event(
-    name: String,
-    start: States,
-    end: States,
-    calendar_id: String,
-    token: String,
-) -> u16 {
-    let new_event = CreateEvent {
-        calendar_id,
-        name,
-        start: Time {
-            day: *start.day,
-            month: *start.month,
-            year: *start.year,
-            hour: *start.hour + (12 * *start.ampm),
-            minute: *start.minute,
-        },
-        end: Time {
-            day: *end.day,
-            month: *end.month,
-            year: *end.year,
-            hour: *end.hour + (12 * *end.ampm),
-            minute: *end.minute,
-        },
-    };
-
-    return post::<CreateEvent>("http://localhost:3080/api/create/event", &token, &new_event).await;
-}
-
 pub async fn delete_event(uuid: String, token: String) -> u16 {
     let delete_event = DeleteEvent { uuid };
 
@@ -113,20 +79,33 @@ pub async fn delete_event(uuid: String, token: String) -> u16 {
 pub fn handle_submit(
     name: String,
     uuid: String,
-    start_states: States,
-    end_states: States,
+    states: StatesContainer,
+    old_key: String,
     token: String,
     status: UseStateHandle<StatusObject>,
     modal: UseStateHandle<String>,
-    refresh_data: Callback<()>,
 ) {
+    let mut display_manager = match EventDisplayManager::get_instance().lock() {
+        Ok(manager) => manager,
+        Err(_) => {
+            return;
+        }
+    };
+
     status.set(StatusObject {
         code: StatusCode::Loading,
         data: "Editing event...".to_string(),
     });
 
     spawn_local(async move {
-        let code = edit_event(name, uuid, start_states.clone(), end_states.clone(), token).await;
+        let code = edit_event(
+            name.clone(),
+            uuid.clone(),
+            states.start.clone(),
+            states.end.clone(),
+            token,
+        )
+        .await;
 
         if code == 200 {
             status.set(StatusObject {
@@ -135,7 +114,30 @@ pub fn handle_submit(
             });
 
             modal.set("None".to_string());
-            refresh_data.emit(());
+
+            web_sys::console::log_1(&format!("Editing event: {}", old_key).into());
+
+            display_manager.edit_event(
+                old_key,
+                Event {
+                    name,
+                    uuid,
+                    start: Time {
+                        day: *states.start.day,
+                        month: *states.start.month,
+                        year: *states.start.year,
+                        hour: *states.start.hour + (12 * *states.start.ampm),
+                        minute: *states.start.minute,
+                    },
+                    end: Time {
+                        day: *states.end.day,
+                        month: *states.end.month,
+                        year: *states.end.year,
+                        hour: *states.end.hour + (12 * *states.end.ampm),
+                        minute: *states.end.minute,
+                    },
+                },
+            )
         } else {
             status.set(StatusObject {
                 code: StatusCode::Error,
@@ -148,11 +150,18 @@ pub fn handle_submit(
 pub fn handle_delete(
     uuid: String,
     token: String,
+    old_key: String,
     status: UseStateHandle<StatusObject>,
     modal: UseStateHandle<String>,
     open: UseStateHandle<String>,
-    refresh_data: Callback<()>,
 ) {
+    let mut display_manager = match EventDisplayManager::get_instance().lock() {
+        Ok(manager) => manager,
+        Err(_) => {
+            return;
+        }
+    };
+
     status.set(StatusObject {
         code: StatusCode::Loading,
         data: "Editing event...".to_string(),
@@ -168,7 +177,8 @@ pub fn handle_delete(
             });
 
             modal.set("None".to_string());
-            refresh_data.emit(());
+
+            display_manager.delete_event(old_key, uuid);
         } else {
             status.set(StatusObject {
                 code: StatusCode::Error,

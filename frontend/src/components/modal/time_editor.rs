@@ -19,6 +19,12 @@ pub struct States {
     pub ampm: UseStateHandle<u8>,
 }
 
+#[derive(PartialEq, Clone)]
+pub struct StatesContainer {
+    pub start: States,
+    pub end: States,
+}
+
 #[derive(Properties, PartialEq)]
 pub struct TimeEditorParams {
     pub id: String,

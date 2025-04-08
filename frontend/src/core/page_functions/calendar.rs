@@ -72,7 +72,7 @@ pub fn get_user_data(
             display_manager.clear_events();
             for calendar in &res.calendars {
                 for event in &calendar.events {
-                    display_manager.add_event(calendar.name.clone(), event.clone());
+                    display_manager.add_event(calendar.uuid.clone(), event.clone());
                     web_sys::console::log_1(&JsValue::from_str("added event"));
                 }
             }

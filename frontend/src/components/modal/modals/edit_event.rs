@@ -13,8 +13,9 @@ use crate::components::{
         status::{Status, StatusCode, StatusObject},
     },
     modal::{
-        modal_container::ModalContainer, modals::confirm_action::ConfirmAction,
-        time_editor::TimeEditor,
+        modal_container::ModalContainer,
+        modals::confirm_action::ConfirmAction,
+        time_editor::{StatesContainer, TimeEditor},
     },
 };
 
@@ -65,6 +66,9 @@ pub fn EditEvent(props: &EditEventParams) -> Html {
         open_clone.set("Confirm Action".to_string());
     };
 
+    let day_key = props.day_key.clone();
+    let day_key_clone = day_key.clone();
+
     let name_clone = name.clone();
     let token_clone = token.clone();
 
@@ -76,9 +80,6 @@ pub fn EditEvent(props: &EditEventParams) -> Html {
 
     let modal_clone_a = props.modal.clone();
     let modal_clone_b = props.modal.clone();
-
-    let refresh_data_a = props.refresh_data.clone();
-    let refresh_data_b = props.refresh_data.clone();
 
     html! {
         <div class="w-96">
@@ -108,12 +109,14 @@ pub fn EditEvent(props: &EditEventParams) -> Html {
                                 handle_submit(
                                     name_clone.to_string(),
                                     uuid_clone_a.to_string(),
-                                    start_states.clone(),
-                                    end_states.clone(),
+                                    StatesContainer {
+                                        start: start_states.clone(),
+                                        end: end_states.clone(),
+                                    },
+                                    day_key.to_string(),
                                     token_clone.to_string(),
                                     status_clone.clone(),
                                     modal_clone_a.clone(),
-                                    refresh_data_a.clone(),
                                 );
                             } }>{ "Submit" }</Button>
                             <Button style={ ButtonStyle::Secondary } width="" on_click={ handle_confirm }>{ "Delete" }</Button>
@@ -130,10 +133,10 @@ pub fn EditEvent(props: &EditEventParams) -> Html {
                                                         handle_delete(
                                                             uuid_clone_b.to_string(),
                                                             token.to_string(),
+                                                            day_key_clone.to_string(),
                                                             status.clone(),
                                                             modal_clone_b.clone(),
                                                             open_clone.clone(),
-                                                            refresh_data_b.clone(),
                                                         );
                                                         }
                                                     }

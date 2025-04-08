@@ -163,7 +163,7 @@ pub fn MonthView(props: &MonthViewParams) -> Html {
             let day_key = if *props.month == 0 {
                 format!(
                     "{}-{}-{}-{}",
-                    calendar.name,
+                    calendar.uuid,
                     *props.year - 1,
                     11,
                     previous_month.days_in_month - i - 1
@@ -171,7 +171,7 @@ pub fn MonthView(props: &MonthViewParams) -> Html {
             } else {
                 format!(
                     "{}-{}-{}-{}",
-                    calendar.name,
+                    calendar.uuid,
                     *props.year,
                     *props.month - 1,
                     previous_month.days_in_month - i - 1
@@ -207,7 +207,7 @@ pub fn MonthView(props: &MonthViewParams) -> Html {
         for calendar in props.active_calendars.clone().iter() {
             day_keys.push(format!(
                 "{}-{}-{}-{}",
-                calendar.name, *props.year, *props.month, i
+                calendar.uuid, *props.year, *props.month, i
             ));
         }
 
@@ -241,11 +241,11 @@ pub fn MonthView(props: &MonthViewParams) -> Html {
 
         for calendar in props.active_calendars.clone().iter() {
             let day_key = if *props.month == 11 {
-                format!("{}-{}-{}-{}", calendar.name, *props.year + 1, 0, i + 1)
+                format!("{}-{}-{}-{}", calendar.uuid, *props.year + 1, 0, i + 1)
             } else {
                 format!(
                     "{}-{}-{}-{}",
-                    calendar.name,
+                    calendar.uuid,
                     *props.year,
                     *props.month + 1,
                     i + 1

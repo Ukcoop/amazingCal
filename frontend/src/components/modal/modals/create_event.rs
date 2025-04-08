@@ -7,7 +7,7 @@ use crate::components::{
         input_field::InputField,
         status::{Status, StatusCode, StatusObject},
     },
-    modal::time_editor::TimeEditor,
+    modal::time_editor::{StatesContainer, TimeEditor},
 };
 
 use crate::core::{
@@ -51,8 +51,9 @@ pub fn CreateEvent(props: &CreateEventParams) -> Html {
 
     let modal = props.modal.clone();
     let calendar_id = props.active_calendars[0].uuid.clone();
-    let refresh_data = props.refresh_data.clone();
     let status_clone = status.clone();
+
+    let refresh_data = props.refresh_data.clone();
 
     html! {
         <div class="w-96 pt-1">
@@ -94,8 +95,10 @@ pub fn CreateEvent(props: &CreateEventParams) -> Html {
                     calendar_id.clone(),
                     modal.clone(),
                     refresh_data.clone(),
-                    start_states.clone(),
-                    end_states.clone(),
+                    StatesContainer {
+                        start: start_states.clone(),
+                        end: end_states.clone(),
+                    },
                     token.clone(),
                     status_clone.clone(),
         )

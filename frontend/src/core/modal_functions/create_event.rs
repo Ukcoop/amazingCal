@@ -1,20 +1,27 @@
 use chrono::{Local, Timelike};
+use serde::Serialize;
 use wasm_bindgen_futures::spawn_local;
 use yew::{html, Callback, Html, UseStateHandle};
 
-use crate::{
-    components::{
-        main::status::{StatusCode, StatusObject},
-        modal::time_editor::States,
-    },
-    core::{
-        calendar_data::get_todays_date,
-        page_functions::calendar::ActiveCalendar,
-        shared::{Event, Time},
-    },
+use crate::components::{
+    main::status::{StatusCode, StatusObject},
+    modal::time_editor::{States, StatesContainer},
 };
 
-use super::edit_event::create_event;
+use crate::core::{
+    api::post,
+    calendar_data::get_todays_date,
+    page_functions::calendar::ActiveCalendar,
+    shared::{Event, Time},
+};
+
+#[derive(Serialize)]
+struct CreateEvent {
+    calendar_id: String,
+    name: String,
+    start: Time,
+    end: Time,
+}
 
 pub fn get_calendar_options(active_calendars: UseStateHandle<Vec<ActiveCalendar>>) -> Vec<Html> {
     let mut active_calendar_options: Vec<Html> = vec![];
@@ -51,13 +58,41 @@ pub fn new_event() -> Event {
     };
 }
 
+pub async fn create_event(
+    name: String,
+    start: States,
+    end: States,
+    calendar_id: String,
+    token: String,
+) -> u16 {
+    let new_event = CreateEvent {
+        calendar_id,
+        name,
+        start: Time {
+            day: *start.day,
+            month: *start.month,
+            year: *start.year,
+            hour: *start.hour + (12 * *start.ampm),
+            minute: *start.minute,
+        },
+        end: Time {
+            day: *end.day,
+            month: *end.month,
+            year: *end.year,
+            hour: *end.hour + (12 * *end.ampm),
+            minute: *end.minute,
+        },
+    };
+
+    return post::<CreateEvent>("http://localhost:3080/api/create/event", &token, &new_event).await;
+}
+
 pub fn handle_submit(
     name: String,
     calendar_id: String,
     modal: UseStateHandle<String>,
     refresh_data: Callback<()>,
-    start_states: States,
-    end_states: States,
+    states: StatesContainer,
     token: String,
     status: UseStateHandle<StatusObject>,
 ) {
@@ -69,8 +104,8 @@ pub fn handle_submit(
     spawn_local(async move {
         let code = create_event(
             name.to_string(),
-            start_states.clone(),
-            end_states.clone(),
+            states.start.clone(),
+            states.end.clone(),
             calendar_id.clone(),
             token.to_string(),
         )
@@ -79,7 +114,7 @@ pub fn handle_submit(
         if code == 200 {
             status.set(StatusObject {
                 code: StatusCode::Ok,
-                data: "Event edited successfully".to_string(),
+                data: "Event created successfully".to_string(),
             });
 
             modal.set("None".to_string());
