@@ -9,18 +9,16 @@ use crate::components::{
 };
 
 use crate::core::{
-    api::post,
-    calendar_data::get_todays_date,
-    page_functions::calendar::ActiveCalendar,
-    shared::{Event, Time},
+    api::post, calendar_data::get_todays_date, page_functions::calendar::ActiveCalendar,
+    shared::Time,
 };
 
-#[derive(Serialize)]
-struct CreateEvent {
-    calendar_id: String,
-    name: String,
-    start: Time,
-    end: Time,
+#[derive(Serialize, PartialEq, Clone)]
+pub struct CreateNewEvent {
+    pub calendar_id: String,
+    pub name: String,
+    pub start: Time,
+    pub end: Time,
 }
 
 pub fn get_calendar_options(active_calendars: UseStateHandle<Vec<ActiveCalendar>>) -> Vec<Html> {
@@ -33,14 +31,14 @@ pub fn get_calendar_options(active_calendars: UseStateHandle<Vec<ActiveCalendar>
     return active_calendar_options;
 }
 
-pub fn new_event() -> Event {
+pub fn new_event() -> CreateNewEvent {
     let (todays_month, todays_year, todays_day) = get_todays_date();
     let now = Local::now();
     let hour = now.hour();
 
-    return Event {
+    return CreateNewEvent {
+        calendar_id: "".to_string(),
         name: "Event".to_string(),
-        uuid: "".to_string(),
         start: Time {
             year: todays_year as u16,
             month: todays_month as u8,
@@ -65,7 +63,7 @@ pub async fn create_event(
     calendar_id: String,
     token: String,
 ) -> u16 {
-    let new_event = CreateEvent {
+    let new_event = CreateNewEvent {
         calendar_id,
         name,
         start: Time {
@@ -84,7 +82,8 @@ pub async fn create_event(
         },
     };
 
-    return post::<CreateEvent>("http://localhost:3080/api/create/event", &token, &new_event).await;
+    return post::<CreateNewEvent>("http://localhost:3080/api/create/event", &token, &new_event)
+        .await;
 }
 
 pub fn handle_submit(

@@ -1,2 +1,1 @@
-pub mod view_switcher;
-pub mod views;
+pub mod month_view;

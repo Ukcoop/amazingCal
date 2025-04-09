@@ -10,6 +10,10 @@ use yew_router::hooks::use_navigator;
 
 use crate::core::{
     calendar_data::get_todays_date,
+    modal_functions::{
+        create_event::{new_event, CreateNewEvent},
+        delete_calendar::delete_calendar,
+    },
     page_functions::calendar::{get_current_session, get_user_data, ActiveCalendar},
     shared::Calendar,
     time::get_month_name,
@@ -19,13 +23,17 @@ use crate::components::main::{
     button::{Button, ButtonStyle},
     dropdown::DropDown,
     material_symbols::MaterialSymbol,
+    right_click_menu::RightClickMenu,
 };
 
 use crate::components::{
-    calendar::view_switcher::CalendarView,
+    calendar::month_view::{ContextMenuDeps, MonthView},
     modal::{
         modal_container::ModalContainer,
-        modals::{create_calendar::CreateCalendar, create_event::CreateEvent},
+        modals::{
+            confirm_action::ConfirmAction, create_calendar::CreateCalendar,
+            create_event::CreateEvent,
+        },
     },
 };
 
@@ -52,9 +60,24 @@ pub fn CalendarPage() -> Html {
 
     let menu = use_state(|| false);
     let open = use_state(|| "None".to_string());
-    let view = use_state(|| "Month".to_string());
     let email = use_state(|| "".to_string());
     let modal = use_state(|| "None".to_string());
+    let context_menu = use_state(|| "None".to_string());
+    let selected_calendar = use_state(|| "".to_string());
+    let event: UseStateHandle<CreateNewEvent> = use_state(new_event);
+
+    let menu_x = use_state(|| 0);
+    let menu_y = use_state(|| 0);
+
+    let modal_clone = modal.clone();
+    let context_menu_clone = context_menu.clone();
+
+    let handle_context_menu = move |index: usize| {
+        if index == 0 {
+            modal_clone.set("Delete Calendar".to_string());
+        }
+        context_menu_clone.set("None".to_string());
+    };
 
     let (today_month, today_year, _) = get_todays_date();
 
@@ -68,6 +91,7 @@ pub fn CalendarPage() -> Html {
     let token_clone_a = token.clone();
     let token_clone_b = token.clone();
     let token_clone_c = token.clone();
+    let token_clone_d = token.clone();
 
     let month_clone_a = month.clone();
     let month_clone_b = month.clone();
@@ -107,7 +131,7 @@ pub fn CalendarPage() -> Html {
             let new_email = get_email().await;
             email_clone.set(match new_email.as_string() {
                 Some(email) => email,
-                None => "".to_string(),
+                _ => "".to_string(),
             });
         });
     });
@@ -119,6 +143,11 @@ pub fn CalendarPage() -> Html {
         Callback::from(move |_event: MouseEvent| {
             menu_clone.set(!*menu_clone);
         })
+    };
+
+    let context_menu_for_close = context_menu.clone();
+    let close_context_menu = move |_: MouseEvent| {
+        context_menu_for_close.set("None".to_string());
     };
 
     let backward_one_month = {
@@ -143,26 +172,11 @@ pub fn CalendarPage() -> Html {
         })
     };
 
-    let view_clone = view.clone();
-    let open_clone = open.clone();
-    let view_options = vec![html! {"Month"}, html! {"Schedule"}];
-
-    let handle_view_menu = move |index: usize| {
-        match index {
-            0 => view_clone.set("Month".to_string()),
-            1 => view_clone.set("Schedule".to_string()),
-            _ => view_clone.set("Week".to_string()),
-        }
-
-        open_clone.set("None".to_string());
-    };
-
     let open_clone = open.clone();
     let handle_account_menu = move |index: usize| {
         if index == 0 {
             handle_signout();
         }
-
         open_clone.set("None".to_string());
     };
 
@@ -180,28 +194,58 @@ pub fn CalendarPage() -> Html {
         })
     };
 
+    let refresh_data_callback_clone = refresh_data_callback.clone();
+    let selected_calendar_clone = selected_calendar.clone();
+    let modal_clone = modal.clone();
+
+    let handle_delete_calendar = move |_event: MouseEvent| {
+        let selected_calendar_for_delete = selected_calendar_clone.clone();
+        let token_clone_d = token_clone_d.clone();
+        let refresh_data_callback_clone = refresh_data_callback_clone.clone();
+        let modal_clone = modal_clone.clone();
+
+        spawn_local(async move {
+            let code = delete_calendar(
+                selected_calendar_for_delete.to_string(),
+                token_clone_d.to_string(),
+            )
+            .await;
+            if code == 200 {
+                refresh_data_callback_clone.emit(());
+                modal_clone.set("None".to_string());
+            }
+        })
+    };
+
     html! {
-        <div class="flex flex-col p-5 h-screen max-h-screen bg-white dark:bg-gray-950">
+        <div onclick={close_context_menu} class="flex flex-col p-5 h-screen max-h-screen bg-white dark:bg-gray-950">
             <div class="w-full h-10 mb-2 flex items-center justify-between">
                 <div class="flex items-center">
-                    <Button style={ButtonStyle::Secondary} width="w-max" on_click={toggle_menu}><MaterialSymbol name="menu"/></Button>
+                    <Button style={ButtonStyle::Secondary} width="w-max" on_click={toggle_menu}>
+                        <MaterialSymbol name="menu"/>
+                    </Button>
                     <a class="text-2xl pl-4 pr-2">{"amazingCal"}</a>
                     <div class="flex px-2">
-                        <div class={CLICKABLE_ELEMENT_CLASS} onclick={backward_one_month}><MaterialSymbol name="arrow_back_ios_new"/></div>
-                        <div class={CLICKABLE_ELEMENT_CLASS} onclick={foward_one_month}><MaterialSymbol name="arrow_forward_ios"/></div>
+                        <div class={CLICKABLE_ELEMENT_CLASS} onclick={backward_one_month}>
+                            <MaterialSymbol name="arrow_back_ios_new"/>
+                        </div>
+                        <div class={CLICKABLE_ELEMENT_CLASS} onclick={foward_one_month}>
+                            <MaterialSymbol name="arrow_forward_ios"/>
+                        </div>
                     </div>
                     <a class="text-2xl">{format!("{}, {:?}", get_month_name(*month), *year)}</a>
                 </div>
                 <div class="flex items-center">
-                    <DropDown open={open.clone()} id="View selector" minimal={false} element={html!{&*view}} options={view_options} return_index={handle_view_menu}/>
-                    <DropDown open={open.clone()} id="Account" minimal={false} element={html!{<svg width="40" height="40" data-jdenticon-value={(*email).clone()}></svg>}} options={vec![html!{"Sign out"}]} return_index={handle_account_menu}/>
+                    <DropDown open={open.clone()} id="Account" minimal={false} element={html!{
+                        <svg width="40" height="40" data-jdenticon-value={(*email).clone()}></svg>
+                    }} options={vec![html!{"Sign out"}]} return_index={handle_account_menu}/>
                 </div>
             </div>
             <div class="flex h-full">
                 <div class={format!("flex flex-col {} h-full mr-2", if *menu {"w-60"} else {"w-15"})}>
                     <Button style={ButtonStyle::Secondary} width="w-max" on_click={add_event}>
                         <MaterialSymbol name="add"/>
-                        {if *menu {html!{{"Event"}}} else {html!{""}}}
+                        {if *menu { html!{"Event"} } else { html!{""} }}
                     </Button>
                     {if *menu {
                         html! {
@@ -209,24 +253,85 @@ pub fn CalendarPage() -> Html {
                                 <div class="flex justify-between items-center my-2">
                                     <p>{"Calendars"}</p>
                                     <div class={format!("flex items-center {}", CLICKABLE_ELEMENT_CLASS)}>
-                                        <a onclick={add_calendar}><MaterialSymbol name="add"/></a>
+                                        <a onclick={add_calendar}>
+                                            <MaterialSymbol name="add"/>
+                                        </a>
                                     </div>
                                 </div>
                                 <div class="flex flex-col">
-                                {
-                                    calendars_clone.iter().map(|calendar| html! {
-                                       <a>{&*calendar.name}</a>
-                                    }).collect::<Html>()
-                                }
+                                    {
+                                        calendars_clone.iter().map(|calendar| {
+                                            // Clone the necessary state handles inside the loop.
+                                            let menu_x = menu_x.clone();
+                                            let menu_y = menu_y.clone();
+                                            let context_menu = context_menu.clone();
+                                            let selected_calendar = selected_calendar.clone();
+                                            let uuid = calendar.uuid.clone();
+                                            html! {
+                                                <a oncontextmenu={move |e: MouseEvent| {
+                                                    e.prevent_default();
+                                                    menu_x.set(e.client_x());
+                                                    menu_y.set(e.client_y());
+                                                    context_menu.set("Calendar".to_string());
+                                                    selected_calendar.set(uuid.clone());
+                                                }}>
+                                                    { &*calendar.name }
+                                                </a>
+                                            }
+                                        }).collect::<Html>()
+                                    }
                                 </div>
                             </div>
                         }
-                    } else {html! {}}}
+                    } else { html!{} }}
                 </div>
-                <CalendarView view={view.clone()} month={month.clone()} year={year.clone()} modal={modal.clone()} active_calendars={active_calendars_clone.clone()} token={token_clone_c.to_string()} refresh_data={refresh_data_callback.clone()}/>
+                <MonthView
+                    month={month.clone()}
+                    year={year.clone()}
+                    modal={modal.clone()}
+                    context_menu_deps={ContextMenuDeps {
+                        context_menu: context_menu.clone(),
+                        modal: modal.clone(),
+                        event: event.clone()
+                    }}
+                    active_calendars={active_calendars_clone.clone()}
+                    token={token_clone_c.to_string()}
+                    refresh_data={refresh_data_callback.clone()}
+                />
             </div>
-            {if modal.as_str() == "Create Calendar" {html!{<ModalContainer title="Create Calendar" component={html!{<CreateCalendar token={token_clone_c.to_string()} modal={modal.clone()} refresh_data={refresh_data_callback.clone()}/>}} modal={modal.clone()}/>}} else {html!{}}}
-            {if modal.as_str() == "Create Event" {html!{<ModalContainer title="Create Event" component={html!{<CreateEvent token={token_clone_c.to_string()} active_calendars={active_calendars_clone} modal={modal.clone()} refresh_data={refresh_data_callback.clone()}/>}} modal={modal.clone()}/>}} else {html!{}}}
+            {if modal.as_str() == "Create Calendar" {
+                html!{
+                    <ModalContainer title="Create Calendar" component={html!{
+                        <CreateCalendar token={token_clone_c.to_string()} modal={modal.clone()} refresh_data={refresh_data_callback.clone()}/>
+                    }} modal={modal.clone()}/>
+                }
+            } else { html!{} }}
+            {if modal.as_str() == "Create Event" {
+                html!{
+                    <ModalContainer title="Create Event" component={html!{
+                        <CreateEvent token={token_clone_c.to_string()}
+                                     active_calendars={active_calendars_clone}
+                                     event={event}
+                                     modal={modal.clone()}
+                                     refresh_data={refresh_data_callback.clone()}/>
+                    }} modal={modal.clone()}/>
+                }
+            } else { html!{} }}
+            {if modal.as_str() == "Delete Calendar" {
+                html!{
+                    <ModalContainer title="Delete Calendar" component={html!{
+                        <ConfirmAction text="Are you sure you want to delete this calendar?" action={handle_delete_calendar}/>
+                    }} modal={modal.clone()}/>
+                }
+            } else { html!{} }}
+            if *context_menu == "Calendar" {
+                <RightClickMenu
+                    x={*menu_x}
+                    y={*menu_y}
+                    options={vec![html! {"Delete calendar"}]}
+                    return_index={handle_context_menu}
+                />
+            }
         </div>
     }
 }

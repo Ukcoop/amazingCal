@@ -1,16 +1,29 @@
+use chrono::{Local, Timelike};
 use yew::{
-    function_component, html, virtual_dom::VNode, Callback, Html, Properties, UseStateHandle,
+    function_component, html, use_state, virtual_dom::VNode, Callback, Html, MouseEvent,
+    Properties, UseStateHandle,
 };
 
 use crate::core::{
     calendar_data::{get_todays_date, get_year_data},
     event_manager::EventDisplayManager,
+    modal_functions::create_event::CreateNewEvent,
     page_functions::calendar::ActiveCalendar,
-    shared::Event,
+    shared::{Event, Time},
     time::format_time,
 };
 
-use crate::components::modal::{modal_container::ModalContainer, modals::edit_event::EditEvent};
+use crate::components::{
+    main::right_click_menu::RightClickMenu,
+    modal::{modal_container::ModalContainer, modals::edit_event::EditEvent},
+};
+
+#[derive(PartialEq, Clone)]
+pub struct ContextMenuDeps {
+    pub context_menu: UseStateHandle<String>,
+    pub modal: UseStateHandle<String>,
+    pub event: UseStateHandle<CreateNewEvent>,
+}
 
 #[derive(Properties, PartialEq)]
 struct DayParams {
@@ -22,6 +35,8 @@ struct DayParams {
     show_right_edge: bool,
     show_bottom_edge: bool,
     modal: UseStateHandle<String>,
+    context_menu_deps: ContextMenuDeps,
+    new_event: CreateNewEvent,
     token: String,
     refresh_data: Callback<()>,
 }
@@ -31,6 +46,7 @@ pub struct MonthViewParams {
     pub month: UseStateHandle<i32>,
     pub year: UseStateHandle<i32>,
     pub modal: UseStateHandle<String>,
+    pub context_menu_deps: ContextMenuDeps,
     pub active_calendars: UseStateHandle<Vec<ActiveCalendar>>,
     pub token: String,
     pub refresh_data: Callback<()>,
@@ -38,16 +54,52 @@ pub struct MonthViewParams {
 
 #[function_component]
 fn Day(props: &DayParams) -> Html {
-    let inactive_style: String = "text-gray-500".to_string();
+    let key = format!(
+        "{}-{}-{}-{}",
+        props.day.clone(),
+        props.active.clone(),
+        props.show_right_edge.clone(),
+        props.show_bottom_edge.clone()
+    );
+    let menu_x = use_state(|| 0);
+    let menu_y = use_state(|| 0);
+
+    let show_menu = props.context_menu_deps.context_menu.clone();
+    let key_clone = key.clone();
+    let menu_x_clone = menu_x.clone();
+    let menu_y_clone = menu_y.clone();
+
+    let on_context_menu = {
+        Callback::from(move |e: MouseEvent| {
+            e.prevent_default();
+            menu_x_clone.set(e.client_x());
+            menu_y_clone.set(e.client_y());
+            show_menu.set(key_clone.to_string());
+        })
+    };
+
+    let context_menu_deps = props.context_menu_deps.clone();
+    let new_event = props.new_event.clone();
+
+    let handle_context_menu = move |index: usize| {
+        if index == 0 {
+            context_menu_deps.modal.set("Create Event".to_string());
+            context_menu_deps.event.set(new_event.clone());
+        }
+        context_menu_deps.context_menu.set("None".to_string());
+    };
+
+    let inactive_style: String =
+        "hover:bg-gray-200 hover:dark:bg-gray-800 text-gray-500".to_string();
     let today_style: String =
-        "rounded-full text-white bg-black dark:text-black dark:bg-white".to_string();
+        "text-white hover:bg-gray-700 bg-black dark:text-black dark:bg-white".to_string();
 
     let style = if props.today {
         today_style
     } else if !props.active {
         inactive_style
     } else {
-        "".to_string()
+        "hover:bg-gray-200 hover:dark:bg-gray-800".to_string()
     };
 
     let modal = props.modal.clone();
@@ -58,7 +110,6 @@ fn Day(props: &DayParams) -> Html {
 
     for day_key in day_keys.iter() {
         let got_events = props.display_manager.get_events_by_key(day_key).clone();
-
         for event in got_events.iter() {
             events_with_day_keys.0.push(event.clone());
             events_with_day_keys.1.push(day_key.clone());
@@ -86,7 +137,13 @@ fn Day(props: &DayParams) -> Html {
                         html! {
                             <ModalContainer
                                 title={event.name.clone()}
-                                component={html! {<EditEvent event={event.clone()} day_key={day_key_2.clone()} token={props.token.clone()} modal={modal_2.clone()} refresh_data={props.refresh_data.clone()} />}}
+                                component={html!{
+                                    <EditEvent event={event.clone()}
+                                        day_key={day_key_2.clone()}
+                                        token={props.token.clone()}
+                                        modal={modal_2.clone()}
+                                        refresh_data={props.refresh_data.clone()} />
+                                }}
                                 modal={modal_2.clone()} />
                         }
                     } else {
@@ -97,20 +154,30 @@ fn Day(props: &DayParams) -> Html {
         });
     }
 
-    return html! {
-        <div class={
-            format!("flex flex-col border-2 border-transparent {} {}",
-                if props.show_right_edge {"border-r-gray-800"} else {""},
-                if props.show_bottom_edge {"border-b-gray-800"} else {""})
-        }>
-            <a class={format!("text-xl {} px-2 py-1 m-1", style)}>{ day }</a>
+    let conxt_menu_deps = props.context_menu_deps.clone();
+
+    html! {
+        <div class={ format!(
+            "flex flex-col border-2 border-transparent {} {}",
+            if props.show_right_edge { "border-r-gray-800" } else { "" },
+            if props.show_bottom_edge { "border-b-gray-800" } else { "" }
+        ) }>
+            <a oncontextmenu={on_context_menu}
+               class={ format!("text-xl {} px-2 py-1 m-1 rounded-full", style) }>
+               { day }
+            </a>
             <div class="flex flex-col w-full overflow-auto">
-            {
-                event_elements.into_iter().collect::<Html>()
-            }
+                { for event_elements.into_iter() }
             </div>
+            if *conxt_menu_deps.context_menu == key {
+                <RightClickMenu
+                    x={*menu_x}
+                    y={*menu_y}
+                    options={vec![html! {"New event"}]}
+                    return_index={handle_context_menu} />
+            }
         </div>
-    };
+    }
 }
 
 #[function_component]
@@ -125,6 +192,9 @@ pub fn MonthView(props: &MonthViewParams) -> Html {
 
     let current_month = get_year_data(*props.year)[*props.month as usize].clone();
     let (todays_month, todays_year, todays_day) = get_todays_date();
+
+    let now = Local::now();
+    let hour = now.hour();
 
     let previous_month = if *props.month == 0 {
         get_year_data(*props.year - 1)[11].clone()
@@ -181,6 +251,25 @@ pub fn MonthView(props: &MonthViewParams) -> Html {
             day_keys.push(day_key);
         }
 
+        let new_event = CreateNewEvent {
+            calendar_id: "".to_string(),
+            name: "New event".to_string(),
+            start: Time {
+                year: *props.year as u16,
+                month: *props.month as u8 - 1,
+                day: (previous_month.days_in_month - i - 1) as u8,
+                hour: hour as u8,
+                minute: 0,
+            },
+            end: Time {
+                year: *props.year as u16,
+                month: *props.month as u8 - 1,
+                day: (previous_month.days_in_month - i - 1) as u8,
+                hour: hour as u8 + 1,
+                minute: 0,
+            },
+        };
+
         day_components.push(html! {<Day
             day_keys={day_keys.clone()}
             display_manager={display_manager.clone()}
@@ -190,6 +279,8 @@ pub fn MonthView(props: &MonthViewParams) -> Html {
             show_right_edge={true}
             show_bottom_edge={true}
             modal={props.modal.clone()}
+            context_menu_deps={props.context_menu_deps.clone()}
+            new_event={new_event}
             token={props.token.clone()}
             refresh_data={props.refresh_data.clone()}
         />});
@@ -211,6 +302,25 @@ pub fn MonthView(props: &MonthViewParams) -> Html {
             ));
         }
 
+        let new_event = CreateNewEvent {
+            calendar_id: "".to_string(),
+            name: "New event".to_string(),
+            start: Time {
+                year: *props.year as u16,
+                month: *props.month as u8,
+                day: i as u8,
+                hour: hour as u8,
+                minute: 0,
+            },
+            end: Time {
+                year: *props.year as u16,
+                month: *props.month as u8,
+                day: i as u8,
+                hour: hour as u8 + 1,
+                minute: 0,
+            },
+        };
+
         day_components.push(html! {<Day
             day_keys={day_keys.clone()}
             display_manager={display_manager.clone()}
@@ -220,6 +330,8 @@ pub fn MonthView(props: &MonthViewParams) -> Html {
             show_right_edge={show_right_edge}
             show_bottom_edge={show_bottom_edge}
             modal={props.modal.clone()}
+            context_menu_deps={props.context_menu_deps.clone()}
+            new_event={new_event}
             token={props.token.clone()}
             refresh_data={props.refresh_data.clone()}
         />});
@@ -241,19 +353,38 @@ pub fn MonthView(props: &MonthViewParams) -> Html {
 
         for calendar in props.active_calendars.clone().iter() {
             let day_key = if *props.month == 11 {
-                format!("{}-{}-{}-{}", calendar.uuid, *props.year + 1, 0, i + 1)
+                format!("{}-{}-{}-{}", calendar.uuid, *props.year + 1, 0, i)
             } else {
                 format!(
                     "{}-{}-{}-{}",
                     calendar.uuid,
                     *props.year,
                     *props.month + 1,
-                    i + 1
+                    i
                 )
             };
 
             day_keys.push(day_key);
         }
+
+        let new_event = CreateNewEvent {
+            calendar_id: "".to_string(),
+            name: "New event".to_string(),
+            start: Time {
+                year: *props.year as u16,
+                month: *props.month as u8 + 1,
+                day: i as u8,
+                hour: hour as u8,
+                minute: 0,
+            },
+            end: Time {
+                year: *props.year as u16,
+                month: *props.month as u8 + 1,
+                day: i as u8,
+                hour: hour as u8 + 1,
+                minute: 0,
+            },
+        };
 
         day_components.push(html! {<Day
             day_keys={day_keys.clone()}
@@ -264,6 +395,8 @@ pub fn MonthView(props: &MonthViewParams) -> Html {
             show_right_edge={show_right_edge}
             show_bottom_edge={show_bottom_edge}
             modal={props.modal.clone()}
+            context_menu_deps={props.context_menu_deps.clone()}
+            new_event={new_event}
             token={props.token.clone()}
             refresh_data={props.refresh_data.clone()}
         />});

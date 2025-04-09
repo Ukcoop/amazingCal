@@ -1,18 +1,21 @@
 use yew::{function_component, html, use_state, Callback, Html, Properties, UseStateHandle};
 
-use crate::components::{
-    main::{
-        button::{Button, ButtonStyle},
-        dropdown::DropDown,
-        input_field::InputField,
-        status::{Status, StatusCode, StatusObject},
+use crate::{
+    components::{
+        main::{
+            button::{Button, ButtonStyle},
+            dropdown::DropDown,
+            input_field::InputField,
+            status::{Status, StatusCode, StatusObject},
+        },
+        modal::time_editor::{StatesContainer, TimeEditor},
     },
-    modal::time_editor::{StatesContainer, TimeEditor},
+    core::{modal_functions::create_event::CreateNewEvent, shared::Event},
 };
 
 use crate::core::{
     modal_functions::{
-        create_event::{get_calendar_options, handle_calendar_change, handle_submit, new_event},
+        create_event::{get_calendar_options, handle_calendar_change, handle_submit},
         edit_event::use_get_states,
     },
     page_functions::calendar::ActiveCalendar,
@@ -22,14 +25,13 @@ use crate::core::{
 pub struct CreateEventParams {
     pub token: String,
     pub active_calendars: UseStateHandle<Vec<ActiveCalendar>>,
+    pub event: UseStateHandle<CreateNewEvent>,
     pub modal: UseStateHandle<String>,
     pub refresh_data: Callback<()>,
 }
 
 #[function_component]
 pub fn CreateEvent(props: &CreateEventParams) -> Html {
-    let event = new_event();
-
     let open = use_state(|| "None".to_string());
     let open_dropdown = use_state(|| "None".to_string());
 
@@ -42,16 +44,23 @@ pub fn CreateEvent(props: &CreateEventParams) -> Html {
         data: "".to_string(),
     });
 
-    let name = use_state(|| event.name.clone());
+    let name = use_state(|| props.event.name.clone());
 
-    let start_states = use_get_states(event.start.clone());
-    let end_states = use_get_states(event.end.clone());
+    let start_states = use_get_states(props.event.start.clone());
+    let end_states = use_get_states(props.event.end.clone());
 
     let token = props.token.clone();
 
     let modal = props.modal.clone();
     let calendar_id = props.active_calendars[0].uuid.clone();
     let status_clone = status.clone();
+
+    let event = Event {
+        uuid: "".to_string(),
+        name: props.event.name.clone(),
+        start: props.event.start.clone(),
+        end: props.event.end.clone(),
+    };
 
     let refresh_data = props.refresh_data.clone();
 
