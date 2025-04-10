@@ -19,7 +19,7 @@ after creating a new project, you are going to need to modify these files:
 ```bash
 backend/.DATABASE_URL.example
 backend/.JWT_SECRET.example
-frontend/.PYBLIC_ANON_KEY.example
+frontend/.PUBLIC_ANON_KEY.example
 frontend/.PUBLIC_SUPABASE_URL.example
 ```
 
