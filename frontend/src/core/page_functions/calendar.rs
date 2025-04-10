@@ -11,7 +11,7 @@ use crate::Route;
 
 use crate::core::api::get;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub struct ActiveCalendar {
     pub name: String,
     pub uuid: String,
