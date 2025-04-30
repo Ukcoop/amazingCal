@@ -65,7 +65,7 @@ pub fn SideCalendarBar(props: &SideCalendarBarParams) -> Html {
     };
 
     return html! {
-        <div class={format!("flex flex-col {} h-full mr-2", if *props.menu {"w-60"} else {"w-15"})}>
+        <div class={format!("hidden lg:block flex flex-col {} h-full mr-2", if *props.menu {"w-60"} else {"w-15"})}>
             <Button style={ButtonStyle::Secondary} width="w-max" on_click={add_event}>
                 <MaterialSymbol name="add"/>
                 {if *props.menu { html!{"Event"} } else { html!{""} }}

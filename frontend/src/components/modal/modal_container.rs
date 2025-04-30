@@ -26,10 +26,10 @@ pub fn ModalContainer(props: &ModalContainerParams) -> Html {
 
     return html! {
         <div onclick={no_propagation} class="flex items-center justify-center absolute top-0 left-0 w-full h-full bg-black/20 backdrop-blur-sm">
-            <div class="min-w-80 p-4 rounded-md bg-white dark:bg-gray-800">
+            <div class="w-screen lg:w-auto lg:min-w-80 p-4 lg:rounded-md bg-white dark:bg-gray-800">
                 <div class="flex justify-between">
-                    <a class="text-xl">{props.title.clone()}</a>
-                    <div onclick={close_modal}>
+                    <a class="text-4xl lg:text-xl">{props.title.clone()}</a>
+                    <div class="p-5 lg:p-0 bg-red-500/20 rounded-md cursor-pointer hover:bg-red-500/40 lg:bg-transparent" onclick={close_modal}>
                         <MaterialSymbol name="close" />
                     </div>
                 </div>

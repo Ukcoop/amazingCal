@@ -62,18 +62,13 @@ pub async fn edit_event(
         },
     };
 
-    return post::<Event>("http://localhost:3080/api/update/event", &token, &new_event).await;
+    return post::<Event>("/api/update/event", &token, &new_event).await;
 }
 
 pub async fn delete_event(uuid: String, token: String) -> u16 {
     let delete_event = DeleteEvent { uuid };
 
-    return post::<DeleteEvent>(
-        "http://localhost:3080/api/delete/event",
-        &token,
-        &delete_event,
-    )
-    .await;
+    return post::<DeleteEvent>("/api/delete/event", &token, &delete_event).await;
 }
 
 pub fn handle_submit(

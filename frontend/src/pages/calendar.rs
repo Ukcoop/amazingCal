@@ -94,6 +94,7 @@ pub fn CalendarPage() -> Html {
                 menu={menu.clone()}
                 month={month.clone()}
                 year={year.clone()}
+                modal={modal.clone()}
             />
             <div class="flex h-full">
                 <SideCalendarBar

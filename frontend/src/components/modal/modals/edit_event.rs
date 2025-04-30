@@ -82,14 +82,14 @@ pub fn EditEvent(props: &EditEventParams) -> Html {
     let modal_clone_b = props.modal.clone();
 
     html! {
-        <div class="w-96">
-            <div class="flex justify-between mt-4">
-                <a>{ "Starts:" }</a>
-                <div class="flex">{ format!("{}, {}", start_day, start_time) }</div>
+        <div class="lg:w-96">
+            <div class="flex justify-between my-4 lg:mt-4">
+                <a class="text-4xl lg:text-base">{ "Starts:" }</a>
+                <a class="text-4xl lg:text-base">{ format!("{}, {}", start_day, start_time) }</a>
             </div>
-            <div class="flex justify-between">
-                <a>{ "Ends:" }</a>
-                <div class="flex">{ format!("{}, {}", end_day, end_time) }</div>
+            <div class="flex justify-between my-4 lg:my-0">
+                <a class="text-4xl lg:text-base">{ "Ends:" }</a>
+                <a class="text-4xl lg:text-base">{ format!("{}, {}", end_day, end_time) }</a>
             </div>
             <div class="h-0 border dark:border-gray-600 border-black my-2"></div>
             {
@@ -97,7 +97,7 @@ pub fn EditEvent(props: &EditEventParams) -> Html {
                     html! {
                         <div>
                             <div class="flex justify-between items-center">
-                                <a>{ "Name:" }</a>
+                                <a class="text-4xl lg:text-base">{ "Name:" }</a>
                                 <div class="flex justify-end w-48">
                                     <InputField<String> varient="text" value={ name.clone() } />
                                 </div>

@@ -34,7 +34,7 @@ pub fn InputField<T: PartialEq + Display + FromStr + 'static>(props: &InputField
     html! {
         <div class="w-full">
             <input
-                class="w-full border border-black dark:border-gray-600 rounded-md p-1"
+                class="w-full border border-black dark:border-gray-600 rounded-md p-1 h-18 text-4xl lg:text-base lg:h-9"
                 type={props.varient.clone()}
                 value={props.value.to_string()}
                 oninput={on_change}

@@ -92,7 +92,7 @@ fn Day(props: &DayParams) -> Html {
     let inactive_style: String =
         "hover:bg-gray-200 hover:dark:bg-gray-800 text-gray-500".to_string();
     let today_style: String =
-        "text-white hover:bg-gray-700 bg-black dark:text-black dark:bg-white".to_string();
+        "text-white hover:bg-gray-700 hover:dark:bg-gray-300 bg-black dark:text-black dark:bg-white".to_string();
 
     let style = if props.today {
         today_style
@@ -129,7 +129,7 @@ fn Day(props: &DayParams) -> Html {
         event_elements.push(html! {
             <div
                 onclick={move |_| modal.set(day_key.clone())}
-                class="flex justify-between px-2 pb-1">
+                class="flex justify-between px-2 lg:pb-1 py-2">
                 <a>{ event.name.clone() }</a>
                 <a>{ format_time(event.start.hour as i32, event.start.minute as i32) }</a>
                 {
@@ -163,7 +163,7 @@ fn Day(props: &DayParams) -> Html {
             if props.show_bottom_edge { "border-b-gray-800" } else { "" }
         ) }>
             <a oncontextmenu={on_context_menu}
-               class={ format!("text-xl {} px-2 py-1 m-1 rounded-full", style) }>
+               class={ format!("text-4xl lg:text-xl {} px-4 lg:px-2 py-2 lg:py-1 m-1 rounded-full", style) }>
                { day }
             </a>
             <div class="flex flex-col w-full overflow-auto">

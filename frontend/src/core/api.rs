@@ -1,8 +1,10 @@
 use reqwasm::http::Request;
 use serde::{de::DeserializeOwned, Serialize};
 
-pub async fn get<T: DeserializeOwned + Default>(url: &str, token: &str) -> (T, u16) {
-    let response = match Request::get(url)
+pub async fn get<T: DeserializeOwned + Default>(path: &str, token: &str) -> (T, u16) {
+    let base_url = option_env!("BASE_API_URL").unwrap_or("").to_string();
+
+    let response = match Request::get(format!("{}{}", base_url, path).as_str())
         .header("Content-Type", "application/json")
         .header("Authorization", token)
         .send()
@@ -16,13 +18,17 @@ pub async fn get<T: DeserializeOwned + Default>(url: &str, token: &str) -> (T, u
     return (body, response.status());
 }
 
-pub async fn post<T: Serialize>(url: &str, token: &str, json: &T) -> u16 {
+pub async fn post<T: Serialize>(path: &str, token: &str, json: &T) -> u16 {
+    let base_url = option_env!("BASE_API_URL").unwrap_or("").to_string();
+
     let body_string = match serde_json::to_string(json) {
         Ok(s) => s,
         Err(_) => return 0,
     };
 
-    let response = match Request::post(url)
+    web_sys::console::log_1(&format!("{}{}", base_url, path).into());
+
+    let response = match Request::post(format!("{}{}", base_url, path).as_str())
         .header("Content-Type", "application/json")
         .header("Authorization", token)
         .body(body_string)

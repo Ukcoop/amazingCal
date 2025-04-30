@@ -47,7 +47,7 @@ pub fn get_user_data(
     }
 
     spawn_local(async move {
-        let (res, code) = get::<UserData>("http://localhost:3080/api/get/userData", &token).await;
+        let (res, code) = get::<UserData>("/api/get/userData", &token).await;
 
         if code == 200 {
             calendars.set(res.calendars.clone());

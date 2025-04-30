@@ -25,7 +25,8 @@ pub fn get_calendar_options(active_calendars: UseStateHandle<Vec<ActiveCalendar>
     let mut active_calendar_options: Vec<Html> = vec![];
 
     for calendar in active_calendars.iter() {
-        active_calendar_options.push(html! {calendar.name.clone()});
+        active_calendar_options
+            .push(html! {<a class="text-4xl lg:text-base">{calendar.name.clone()}</a>});
     }
 
     return active_calendar_options;
@@ -82,8 +83,8 @@ pub async fn create_event(
         },
     };
 
-    return post::<CreateNewEvent>("http://localhost:3080/api/create/event", &token, &new_event)
-        .await;
+    web_sys::console::log_1(&"Creating event".to_string().into());
+    return post::<CreateNewEvent>("/api/create/event", &token, &new_event).await;
 }
 
 pub fn handle_submit(

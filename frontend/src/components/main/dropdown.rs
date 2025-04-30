@@ -103,7 +103,7 @@ pub fn drop_down(props: &DropDownProps) -> Html {
                                             if not_last { "border border-transparent border-b-black dark:border-b-gray-700" } else { "" }
                                         )}
                                     >
-                                        <div class="text-black dark:text-white">
+                                        <div class="px-4 py-2 text-black dark:text-white">
                                             { option.clone() }
                                         </div>
                                     </div>

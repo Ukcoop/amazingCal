@@ -14,12 +14,7 @@ struct CreateCalendarInput {
 pub async fn create_calendar(name: String, token: String) -> u16 {
     let input = CreateCalendarInput { name };
 
-    return post::<CreateCalendarInput>(
-        "http://localhost:3080/api/create/calendar",
-        &token,
-        &input,
-    )
-    .await;
+    return post::<CreateCalendarInput>("/api/create/calendar", &token, &input).await;
 }
 
 pub fn handle_submit(

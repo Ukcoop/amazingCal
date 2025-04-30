@@ -9,10 +9,5 @@ struct DeleteCalendar {
 pub async fn delete_calendar(calendar_id: String, token: String) -> u16 {
     let delete_calendar = DeleteCalendar { uuid: calendar_id };
 
-    return post::<DeleteCalendar>(
-        "http://localhost:3080/api/delete/calendar",
-        &token,
-        &delete_calendar,
-    )
-    .await;
+    return post::<DeleteCalendar>("/api/delete/calendar", &token, &delete_calendar).await;
 }

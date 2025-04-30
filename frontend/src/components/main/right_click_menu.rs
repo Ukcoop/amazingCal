@@ -18,7 +18,7 @@ pub fn RightClickMenu(props: &RightClickMenuProps) -> Html {
 
     html! {
         <div class="bg-white dark:bg-gray-800 border border-black dark:border-gray-700 text-white rounded-md shadow-lg" style={format!("position: fixed; left: {}px; top: {}px;", props.x, props.y)}>
-            <div class="flex min-w-20 flex-col items-center" style={options_container_style}>
+            <div class="flex min-w-64 lg:min-w-20 flex-col items-center" style={options_container_style}>
                 {
                     props.options.iter().enumerate().map(|(index, option)| {
                         let not_last = index < props.options.len() - 1;
@@ -38,10 +38,12 @@ pub fn RightClickMenu(props: &RightClickMenuProps) -> Html {
                                     "w-full",
                                     "px-2",
                                     "py-1",
+                                    "min-h-20",
+                                    "lg:min-h-0",
                                     if not_last { "border border-transparent border-b-black dark:border-b-gray-700" } else { "" }
                                 )}
                             >
-                                <div class="text-black dark:text-white">
+                                <div class="text-4xl lg:text-base text-black dark:text-white">
                                     { option.clone() }
                                 </div>
                             </div>

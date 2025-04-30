@@ -65,22 +65,22 @@ pub fn CreateEvent(props: &CreateEventParams) -> Html {
     let refresh_data = props.refresh_data.clone();
 
     html! {
-        <div class="w-96 pt-1">
-            <div class="flex justify-between items-center py-1">
-                <a>{ "Calendar:" }</a>
+        <div class="lg:w-96 pt-1">
+            <div class="flex justify-between items-center py-4 lg:py-1">
+                <a class="text-4xl lg:text-base">{ "Calendar:" }</a>
                 <DropDown
                     open={ open_dropdown.clone() }
                     id="Selected_Calendar"
                     minimal={ false }
-                    element={ html! { <a>{active_calendar[*active_calendar_index.clone()].name.clone()}</a> }}
+                    element={ html! { <a class="text-4xl lg:text-base">{active_calendar[*active_calendar_index.clone()].name.clone()}</a> }}
                     options={active_calendar_options.clone()}
                     return_index={move |index: usize| {
                         handle_calendar_change(index, active_calendar_index.clone(), open_dropdown.clone())
                     }}
                 />
             </div>
-            <div class="flex justify-between items-center">
-                <a>{ "Name:" }</a>
+            <div class="flex justify-between items-center py-4 lg:py-0">
+                <a class="text-4xl lg:text-base">{ "Name:" }</a>
                 <div class="flex justify-end w-48">
                     <InputField<String> varient="text" value={ name.clone() } />
                 </div>
